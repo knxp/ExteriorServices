@@ -1,0 +1,15 @@
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\bin\Debug\net10.0\ExteriorServices.Application.deps.json
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\bin\Debug\net10.0\ExteriorServices.Application.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\bin\Debug\net10.0\ExteriorServices.Application.pdb
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\bin\Debug\net10.0\ExteriorServices.Domain.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\bin\Debug\net10.0\ExteriorServices.Domain.pdb
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ExteriorServices.Application.csproj.AssemblyReference.cache
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ExteriorServices.Application.GeneratedMSBuildEditorConfig.editorconfig
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ExteriorServices.Application.AssemblyInfoInputs.cache
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ExteriorServices.Application.AssemblyInfo.cs
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ExteriorServices.Application.csproj.CoreCompileInputs.cache
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\Exterior.6D414CEA.Up2Date
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ExteriorServices.Application.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\refint\ExteriorServices.Application.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ExteriorServices.Application.pdb
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ref\ExteriorServices.Application.dll

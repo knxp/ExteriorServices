@@ -1,0 +1,11 @@
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\bin\Debug\net10.0\ExteriorServices.Domain.deps.json
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\bin\Debug\net10.0\ExteriorServices.Domain.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\bin\Debug\net10.0\ExteriorServices.Domain.pdb
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\ExteriorServices.Domain.GeneratedMSBuildEditorConfig.editorconfig
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\ExteriorServices.Domain.AssemblyInfoInputs.cache
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\ExteriorServices.Domain.AssemblyInfo.cs
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\ExteriorServices.Domain.csproj.CoreCompileInputs.cache
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\ExteriorServices.Domain.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\refint\ExteriorServices.Domain.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\ExteriorServices.Domain.pdb
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\ref\ExteriorServices.Domain.dll
