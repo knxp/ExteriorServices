@@ -1,68 +1,55 @@
-using ExteriorServices.Domain.Entities;
-using ExteriorServices.Infrastructure.Data;
+using ExteriorServices.Application.Properties;
+using ExteriorServices.Api.Errors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExteriorServices.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/properties")]
 public class PropertiesController : ControllerBase
 {
-    private readonly ExteriorServicesDbContext _db;
+    private readonly IPropertyService _propertyService;
 
-    public PropertiesController(ExteriorServicesDbContext db)
+    public PropertiesController(IPropertyService propertyService)
     {
-        _db = db;
+        _propertyService = propertyService;
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Property>>> GetProperties()
+    public async Task<ActionResult<IReadOnlyList<PropertyDto>>> GetProperties(
+        CancellationToken cancellationToken)
     {
-        var properties = await _db.Properties
-            .AsNoTracking()
-            .ToListAsync();
-
-        return Ok(properties);
+        return Ok(await _propertyService.GetPropertiesAsync(cancellationToken));
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Property>> GetProperty(int id)
+    public async Task<ActionResult<PropertyDto>> GetProperty(
+        int id,
+        CancellationToken cancellationToken)
     {
-        var property = await _db.Properties
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
+        var property = await _propertyService.GetPropertyAsync(id, cancellationToken);
 
         if (property is null)
         {
-            return NotFound();
+            return NotFound(new ApiError("PropertyNotFound", "The requested property could not be found."));
         }
 
         return Ok(property);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<Property>> CreateProperty(Property property)
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<PropertyDto>> UpdateProperty(
+        int id,
+        [FromBody] UpdatePropertyRequest request,
+        CancellationToken cancellationToken)
     {
-        var customerExists = await _db.Customers
-            .AnyAsync(x => x.Id == property.CustomerId);
+        var property = await _propertyService.UpdatePropertyAsync(id, request, cancellationToken);
 
-        if (!customerExists)
+        if (property is null)
         {
-            return BadRequest("Customer does not exist.");
+            return NotFound(new ApiError("PropertyNotFound", "The requested property could not be found."));
         }
 
-        property.Id = 0;
-        property.CreatedAt = DateTime.UtcNow;
-        property.UpdatedAt = DateTime.UtcNow;
-
-        _db.Properties.Add(property);
-
-        await _db.SaveChangesAsync();
-
-        return CreatedAtAction(
-            nameof(GetProperty),
-            new { id = property.Id },
-            property);
+        return Ok(property);
     }
 }

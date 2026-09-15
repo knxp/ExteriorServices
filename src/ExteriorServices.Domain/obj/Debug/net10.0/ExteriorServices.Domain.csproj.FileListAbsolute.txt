@@ -9,3 +9,4 @@ R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\refint\ExteriorServices.Domain.dll
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\ExteriorServices.Domain.pdb
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\ref\ExteriorServices.Domain.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Domain\obj\Debug\net10.0\ExteriorServices.Domain.sourcelink.json

@@ -170,3 +170,4 @@ R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\obj\Debug\net10.0\ref
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\obj\Debug\net10.0\ExteriorServices.Api.pdb
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\obj\Debug\net10.0\ExteriorServices.Api.genruntimeconfig.cache
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\obj\Debug\net10.0\ref\ExteriorServices.Api.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\obj\Debug\net10.0\ExteriorServices.Api.sourcelink.json
