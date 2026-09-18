@@ -16,6 +16,7 @@ public static class DependencyInjection
     {
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IPropertyRepository, PropertyRepository>();
+        services.AddScoped<Application.Dashboard.IDashboardRepository, DashboardRepository>();
 
         services.AddDbContext<ExteriorServicesDbContext>(options =>
             options.UseSqlServer(

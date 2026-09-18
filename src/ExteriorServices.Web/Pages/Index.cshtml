@@ -1,3 +1,26 @@
 @page
 @model IndexModel
-<h1>Welcome to ExteriorServices.Web</h1>
+
+<h1>ExteriorServices Dashboard</h1>
+
+@if (Model.Dashboard is null)
+{
+    <p>Loading dashboard...</p>
+}
+else
+{
+    <div>
+        <div>
+            <h2>Total Customers</h2>
+            <p>@Model.Dashboard.TotalCustomers</p>
+        </div>
+        <div>
+            <h2>Active Customers</h2>
+            <p>@Model.Dashboard.ActiveCustomers</p>
+        </div>
+        <div>
+            <h2>Total Properties</h2>
+            <p>@Model.Dashboard.TotalProperties</p>
+        </div>
+    </div>
+}
