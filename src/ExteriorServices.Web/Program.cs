@@ -6,6 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:5001";
 
+var hasExplicitUrls = !string.IsNullOrWhiteSpace(builder.Configuration["urls"]);
+if (!hasExplicitUrls)
+{
+    builder.WebHost.UseUrls("http://0.0.0.0:5010");
+}
+
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient<IDashboardApiClient, DashboardApiClient>(client =>
 {

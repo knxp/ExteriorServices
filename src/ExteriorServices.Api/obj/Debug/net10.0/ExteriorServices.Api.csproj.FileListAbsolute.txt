@@ -201,3 +201,4 @@ R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\run
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\Visualization\Prompts\property-visualization-default.txt
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\App_Data\visualizations\13cb6a690ac14a03a46cc30a02bd1c28.json
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\App_Data\visualizations\355a95f68e0f4de68405a64625b15969.json
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\App_Data\visualizations\c968e035f68a4fc6b1c4eab07c871e4c.json

@@ -1,4 +1,4 @@
-@page "/Images"
+@page "/admin/images"
 @model ExteriorServices.Web.Pages.ImagesModel
 
 <div class="panel">
@@ -18,12 +18,17 @@
 
 <div class="panel image-library-empty" id="image-library-empty" hidden>
     <p class="empty-state">No images have been uploaded yet.</p>
-    <a class="secondary-action-link" href="/generate">Open Generate</a>
+    <a class="secondary-action-link" href="@AppRoutes.Generate">Open Generate</a>
 </div>
 
 <p class="empty-state" id="image-library-error" role="alert" hidden>
     Images could not be loaded. Try refreshing the page.
 </p>
+
+<div class="image-lightbox" id="image-lightbox" hidden>
+    <button class="image-lightbox-close" id="image-lightbox-close" type="button" aria-label="Close">&times;</button>
+    <img id="image-lightbox-image" alt="Full screen property photo" />
+</div>
 
 <script>
     const imageLibraryLoading = document.getElementById('image-library-loading');
@@ -31,6 +36,31 @@
     const imageLibraryEmpty = document.getElementById('image-library-empty');
     const imageLibraryError = document.getElementById('image-library-error');
     const imageApiBaseUrl = '@Model.BrowserApiBaseUrl'.replace(/\/$/, '');
+    const imageLightbox = document.getElementById('image-lightbox');
+    const imageLightboxImage = document.getElementById('image-lightbox-image');
+    const imageLightboxClose = document.getElementById('image-lightbox-close');
+
+    function openLightbox(src) {
+        imageLightboxImage.src = src;
+        imageLightbox.hidden = false;
+    }
+
+    function closeLightbox() {
+        imageLightbox.hidden = true;
+        imageLightboxImage.src = '';
+    }
+
+    imageLightbox.addEventListener('click', closeLightbox);
+    imageLightboxClose.addEventListener('click', (event) => {
+        event.stopPropagation();
+        closeLightbox();
+    });
+    imageLightboxImage.addEventListener('click', (event) => event.stopPropagation());
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !imageLightbox.hidden) {
+            closeLightbox();
+        }
+    });
 
     function showLibraryState(state) {
         imageLibraryLoading.hidden = state !== 'loading';
@@ -48,9 +78,11 @@
 
             const preview = document.createElement('img');
             const sourceUrl = image.sourceUrl ?? image.SourceUrl;
-            preview.src = `${imageApiBaseUrl}${sourceUrl}`;
+            const fullSrc = `${imageApiBaseUrl}${sourceUrl}`;
+            preview.src = fullSrc;
             preview.alt = 'Uploaded property photo';
             preview.loading = 'lazy';
+            preview.addEventListener('click', () => openLightbox(fullSrc));
 
             const details = document.createElement('div');
             details.className = 'image-library-card-body';

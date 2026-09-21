@@ -12,22 +12,34 @@
 <div class="panel">
     <h2 class="section-title">Quick access</h2>
     <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-        <a class="primary-action-link" href="/admin/customers"
+        <a class="primary-action-link" href="@AppRoutes.Records"
            style="min-height:120px; flex-direction:column; align-items:flex-start; justify-content:flex-end; text-align:left; padding:20px;">
             <span style="font-size:12px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.8;">Records</span>
             <span style="font-size:24px; margin-top:8px;">Customers</span>
         </a>
 
-        <a class="secondary-action-link" href="/admin/customers/manage?mode=add"
+        <a class="secondary-action-link" href="@AppRoutes.AddCustomerWithMode(AppRoutes.ModeAdd)"
            style="min-height:120px; flex-direction:column; align-items:flex-start; justify-content:flex-end; text-align:left; padding:20px;">
             <span style="font-size:12px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.8;">Create</span>
             <span style="font-size:24px; margin-top:8px;">New Customer</span>
         </a>
 
-        <a class="secondary-action-link" href="/admin/customers/manage?mode=edit"
+        <a class="secondary-action-link" href="@AppRoutes.AddCustomerWithMode(AppRoutes.ModeEdit)"
            style="min-height:120px; flex-direction:column; align-items:flex-start; justify-content:flex-end; text-align:left; padding:20px;">
             <span style="font-size:12px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.8;">Update</span>
             <span style="font-size:24px; margin-top:8px;">Edit Records</span>
+        </a>
+
+        <a class="secondary-action-link" href="@AppRoutes.Generate"
+           style="min-height:120px; flex-direction:column; align-items:flex-start; justify-content:flex-end; text-align:left; padding:20px;">
+            <span style="font-size:12px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.8;">Visualize</span>
+            <span style="font-size:24px; margin-top:8px;">Generate Preview</span>
+        </a>
+
+        <a class="secondary-action-link" href="@AppRoutes.Images"
+           style="min-height:120px; flex-direction:column; align-items:flex-start; justify-content:flex-end; text-align:left; padding:20px;">
+            <span style="font-size:12px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.8;">Library</span>
+            <span style="font-size:24px; margin-top:8px;">Images</span>
         </a>
     </div>
 </div>

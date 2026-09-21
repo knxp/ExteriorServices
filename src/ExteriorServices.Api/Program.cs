@@ -16,7 +16,7 @@ AppConfigurationValidator.Validate(builder.Configuration);
 var hasExplicitUrls = !string.IsNullOrWhiteSpace(builder.Configuration["urls"]);
 if (!hasExplicitUrls)
 {
-    builder.WebHost.UseUrls("http://localhost:5000", "https://localhost:5001");
+    builder.WebHost.UseUrls("http://0.0.0.0:5000", "https://0.0.0.0:5001");
 }
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

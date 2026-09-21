@@ -1,3 +1,4 @@
+@using ExteriorServices.Web
 <!DOCTYPE html>
 <html lang="en">
 
@@ -199,6 +200,61 @@
             textarea {
                 resize: vertical;
                 min-height: 90px;
+            }
+
+            .searchable-select-wrapper {
+                position: relative;
+            }
+
+            .searchable-select-native {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .searchable-select-list {
+                position: absolute;
+                z-index: 20;
+                top: calc(100% + 6px);
+                left: 0;
+                right: 0;
+                max-height: 240px;
+                overflow-y: auto;
+                background: #fff;
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                box-shadow: 0 16px 32px rgba(22, 36, 46, 0.16);
+                padding: 6px;
+            }
+
+            .searchable-select-list[hidden] {
+                display: none;
+            }
+
+            .searchable-select-option {
+                display: block;
+                width: 100%;
+                text-align: left;
+                background: transparent;
+                color: var(--text);
+                font-weight: 500;
+                border-radius: 8px;
+                padding: 9px 10px;
+                box-shadow: none;
+            }
+
+            .searchable-select-option:hover,
+            .searchable-select-option.active {
+                background: rgba(242, 153, 74, 0.12);
+            }
+
+            .searchable-select-empty {
+                padding: 9px 10px;
+                color: var(--muted);
+                font-size: 13px;
             }
 
             button {
@@ -544,6 +600,48 @@
                 aspect-ratio: 4 / 3;
                 object-fit: cover;
                 background: rgba(230, 237, 241, 0.9);
+                cursor: zoom-in;
+            }
+
+            .image-lightbox {
+                position: fixed;
+                inset: 0;
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 32px;
+                background: rgba(15, 22, 28, 0.86);
+                cursor: zoom-out;
+            }
+
+            .image-lightbox[hidden] {
+                display: none;
+            }
+
+            .image-lightbox img {
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 12px;
+                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+            }
+
+            .image-lightbox-close {
+                position: absolute;
+                top: 22px;
+                right: 26px;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.14);
+                color: #fff;
+                font-size: 20px;
+                line-height: 1;
+                box-shadow: none;
+            }
+
+            .image-lightbox-close:hover {
+                background: rgba(255, 255, 255, 0.24);
             }
 
             .image-library-card-body {
@@ -843,25 +941,27 @@
         </button>
 
         <nav class="sidebar-menu" id="sidebar-menu" aria-label="Sidebar menu">
-            <a class="nav-item @(currentPath == "/" ? "active" : "")" href="/">
+            <a class="nav-item @(currentPath == AppRoutes.Home ? "active" : "")" href="@AppRoutes.Home">
                 <span class="nav-icon">🏠</span>
                 <span class="nav-label">Home</span>
             </a>
-            <a class="nav-item @(currentPath.StartsWith("/admin/customers/manage") ? "active" : "")"
-               href="/admin/customers/manage?mode=add">
+            <a class="nav-item @(currentPath.StartsWith(AppRoutes.AddCustomer, StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+               href="@AppRoutes.AddCustomerWithMode(AppRoutes.ModeAdd)">
                 <span class="nav-icon">＋</span>
                 <span class="nav-label">Add Customer</span>
             </a>
-            <a class="nav-item @(currentPath.StartsWith("/admin/customers") && !currentPath.StartsWith("/admin/customers/manage") ? "active" : "")"
-               href="/admin/customers">
+            <a class="nav-item @(currentPath.StartsWith(AppRoutes.Records, StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+               href="@AppRoutes.Records">
                 <span class="nav-icon">📋</span>
                 <span class="nav-label">Customer Records</span>
             </a>
-            <a class="nav-item @(currentPath.StartsWith("/generate") ? "active" : "")" href="/generate">
+            <a class="nav-item @(currentPath.StartsWith(AppRoutes.Generate, StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+               href="@AppRoutes.Generate">
                 <span class="nav-icon">📷</span>
                 <span class="nav-label">Generate Preview</span>
             </a>
-            <a class="nav-item @(currentPath.StartsWith("/Images") ? "active" : "")" href="/Images">
+            <a class="nav-item @(currentPath.StartsWith(AppRoutes.Images, StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+               href="@AppRoutes.Images">
                 <span class="nav-icon">🖼️</span>
                 <span class="nav-label">Images</span>
             </a>
@@ -897,6 +997,96 @@
                     setOpen(true);
                 }
             });
+
+            document.addEventListener('click', (event) => {
+                    if (sidebar?.classList.contains('open') && !sidebar.contains(event.target)) {
+                        setOpen(false);
+                    }
+                 });
+
+                function enhanceSearchableSelect(select) {
+                    if (select.dataset.searchEnhanced) {
+                       return;
+                    }
+                    select.dataset.searchEnhanced = 'true';
+
+                         const wrapper = document.createElement('div');
+                    wrapper.className = 'searchable-select-wrapper';
+                               select.parentNode.insertBefore(wrapper, select);
+                    wrapper.appendChild(select);
+                    select.classList.add('searchable-select-native');
+
+                     const input = document.createElement('input');
+                    input.type = 'text';
+                       input.autocomplete = 'off';
+                    input.placeholder = select.dataset.placeholder       || 'Search by name...';
+                    wrapper.appendChild(input);
+
+                    const list = document.createElement('div');
+                    list.className =    'searchable-select-list';
+                    list.hidden = true;
+                    wrapper.appendChild(list);
+
+                    const options = Array.from(select.options)
+                        .filter(option => option.value !== '')
+                       .map(option => ({ value: option.value, label: option.textContent.trim() }));
+
+                   function syncInputFromSelect() {
+                                  const selected = select.options[select.selectedIndex];
+                        input.value = selected && selected.value !== '' ? selected.textContent.trim() : '';
+                    }
+
+                   function renderList(term) {
+                        const query = term.trim().toLowerCase();
+                        const matches = options.filter(option => option.label.toLowerCase().includes(query));
+                              list.replaceChildren();
+
+                        if (matches.length === 0) {
+                            const empty = document.createElement('div');
+                            empty.className = 'searchable-select-empty';
+                            empty.textContent = 'No matching customers';
+                           list.appendChild(empty);
+                            return;
+                        }
+
+                          matches.forEach(option => {
+                                   const item = document.createElement('button');
+                                    item.type = 'button';
+                                           item.className = 'searchable-select-option';
+                            item.textContent = option.label;                        item.addEventListener('click', () => {
+                                  select.value = option.value;
+                                input.value = option.label;
+                                list.hidden = true;
+                                select.dispatchEvent(new Event('change', { bubbles: true }));
+                            });                            list.appendChild(item);
+                        });
+                    }
+
+                   input.addEventListener('focus', () => {
+                             renderList('');
+                      list.hidden = false;
+                    });
+                    input.addEventListener('input', () => {
+                        renderList(input.value);
+                        list.hidden = false;                });
+                    input.addEventListener('keydown', (event) => {
+                        if         (event.key === 'Escape') {
+                            list.hidden = true;
+                            syncInputFromSelect();
+                        }
+                        });
+
+                    document.addEventListener('click', (event) => {
+                        if (!wrapper.contains(event.target)) {
+                            list.hidden = true;
+                        syncInputFromSelect();
+                        }
+                    });
+
+                    syncInputFromSelect();
+                }
+
+                document.querySelectorAll('select.searchable-select').forEach(enhanceSearchableSelect);
     </script>
 </body>
 

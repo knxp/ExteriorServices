@@ -1,4 +1,4 @@
-@page "/admin/customers/manage"
+@page "/admin/add-customer"
 @model ExteriorServices.Web.Pages.Admin.CustomerManagementModel
 
 <div class="panel">
@@ -29,7 +29,8 @@
             <div class="field-stack" style="margin-bottom: 20px;">
                 <div class="field-item">
                     <label>Select customer</label>
-                    <select name="selectedCustomerId" onchange="this.form.submit()">
+                    <select name="selectedCustomerId" class="searchable-select"
+                            data-placeholder="Search customers by name..." onchange="this.form.submit()">
                         <option value="">Choose a customer</option>
                         @foreach (var customer in Model.Customers)
                         {
