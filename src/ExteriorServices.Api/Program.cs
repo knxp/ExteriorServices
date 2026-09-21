@@ -1,10 +1,16 @@
-using ExteriorServices.Application;
 using ExteriorServices.Api.Errors;
 using ExteriorServices.Api.Middleware;
+using ExteriorServices.Application;
+using ExteriorServices.Application.Configuration;
 using ExteriorServices.Infrastructure;
+using ExteriorServices.Infrastructure.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+AppConfigurationValidator.Validate(builder.Configuration);
 
 var hasExplicitUrls = !string.IsNullOrWhiteSpace(builder.Configuration["urls"]);
 if (!hasExplicitUrls)
@@ -12,15 +18,42 @@ if (!hasExplicitUrls)
     builder.WebHost.UseUrls("http://localhost:5000", "https://localhost:5001");
 }
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.Cookie.Name = "ExteriorServices.Admin";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.LoginPath = "/login";
+        options.AccessDeniedPath = "/access-denied";
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
-        new BadRequestObjectResult(new ApiError(
-            "ValidationError",
-            "One or more validation errors occurred."));
+    {
+        var errors = context.ModelState
+            .Where(entry => entry.Value is not null && entry.Value.Errors.Count > 0)
+            .SelectMany(entry => entry.Value!.Errors.Select(error => new
+            {
+                Field = entry.Key,
+                Error = error.ErrorMessage ?? "Validation failed."
+            }))
+            .ToList();
+
+        return new BadRequestObjectResult(new
+        {
+            error = "ValidationError",
+            message = "One or more validation errors occurred.",
+            errors
+        });
+    };
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -28,15 +61,32 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ExteriorServicesDbContext>();
+
+    if (dbContext.Database.IsSqlite())
+    {
+        dbContext.Database.EnsureCreated();
+    }
+    else
+    {
+        dbContext.Database.Migrate();
+    }
+}
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
 app.UseApiExceptionHandling();
 app.UseSwagger();
 app.UseSwaggerUI();
-
-if (app.Urls.Any(url => url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)))
-{
-    app.UseHttpsRedirection();
-}
-
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();

@@ -1,0 +1,211 @@
+@page "/admin/customers/manage"
+@model ExteriorServices.Web.Pages.Admin.CustomerManagementModel
+
+<div class="panel">
+    <div class="top-form-header">
+        <div class="page-hero compact">
+            <div class="eyebrow">Customer Intake</div>
+        </div>
+        <div class="mode-switch">
+            <a class="mode-link @(Model.Mode == "add" ? "active" : "")" asp-page="/Admin/CustomerManagement"
+               asp-route-mode="add">Add</a>
+            <a class="mode-link @(Model.Mode == "edit" ? "active" : "")" asp-page="/Admin/CustomerManagement"
+               asp-route-mode="edit">Edit</a>
+        </div>
+    </div>
+
+    @if (TempData["CustomerSaved"] is string)
+    {
+        <div class="banner" role="status" aria-live="polite">
+            <span class="banner-dot"></span>
+            <span>@TempData["CustomerSaved"]</span>
+        </div>
+    }
+
+    @if (Model.Mode == "edit")
+    {
+        <form method="get" asp-page="/Admin/CustomerManagement">
+            <input type="hidden" name="mode" value="edit" />
+            <div class="field-stack" style="margin-bottom: 20px;">
+                <div class="field-item">
+                    <label>Select customer</label>
+                    <select name="selectedCustomerId" onchange="this.form.submit()">
+                        <option value="">Choose a customer</option>
+                        @foreach (var customer in Model.Customers)
+                        {
+                            <option value="@customer.Id"
+                                    selected="@(Model.SelectedCustomerId == customer.Id ? "selected" : null)">@customer.FirstName
+                                @customer.LastName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </form>
+
+            @if (Model.SelectedCustomerId.HasValue && Model.CustomerProperties.Count > 0)
+            {
+                <form method="get" asp-page="/Admin/CustomerManagement">
+                    <input type="hidden" name="mode" value="edit" />
+                    <input type="hidden" name="selectedCustomerId" value="@Model.SelectedCustomerId" />
+                    <div class="field-stack" style="margin-bottom: 20px;">
+                        <div class="field-item">
+                            <label>Select property</label>
+                            <select name="selectedPropertyId" onchange="this.form.submit()">
+                                <option value="">Choose a property</option>
+                                @foreach (var property in Model.CustomerProperties)
+                                {
+                                    <option value="@property.Id"
+                                            selected="@(Model.SelectedPropertyId == property.Id ? "selected" : null)">
+                                        @property.AddressLine1, @property.City, @property.State @property.PostalCode</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                }
+
+                <form method="post">
+                    <input type="hidden" asp-for="Mode" />
+                    <input type="hidden" asp-for="SelectedCustomerId" />
+                    <input type="hidden" asp-for="SelectedPropertyId" />
+
+                    <div class="section-block">
+                        <div class="field-stack">
+                            <div class="field-item">
+                                <label asp-for="CustomerForm.FirstName">First name</label>
+                                <input asp-for="CustomerForm.FirstName" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="CustomerForm.LastName">Last name</label>
+                                <input asp-for="CustomerForm.LastName" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="CustomerForm.Phone">Phone</label>
+                                <input asp-for="CustomerForm.Phone" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="CustomerForm.Email">Email</label>
+                                <input asp-for="CustomerForm.Email" type="email" />
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.SelectedCustomerId.HasValue && Model.CustomerProperties.Count > 0)
+                    {
+                        <div class="section-block" style="margin-top: 30px;">
+                            <h2 class="section-title">Property Details</h2>
+
+                            <div class="field-stack">
+                                <div class="field-item">
+                                    <label asp-for="PropertyForm.AddressLine1">Address line 1</label>
+                                    <input asp-for="PropertyForm.AddressLine1" />
+                                </div>
+                                <div class="field-item">
+                                    <label asp-for="PropertyForm.AddressLine2">Address line 2</label>
+                                    <input asp-for="PropertyForm.AddressLine2" />
+                                </div>
+                                <div class="field-item">
+                                    <label asp-for="PropertyForm.City">City</label>
+                                    <input asp-for="PropertyForm.City" />
+                                </div>
+                                <div class="field-item">
+                                    <label asp-for="PropertyForm.State">State</label>
+                                    <input asp-for="PropertyForm.State" />
+                                </div>
+                                <div class="field-item">
+                                    <label asp-for="PropertyForm.PostalCode">Postal code</label>
+                                    <input asp-for="PropertyForm.PostalCode" />
+                                </div>
+                                <div class="field-item">
+                                    <label asp-for="PropertyForm.PropertyType">Property type</label>
+                                    <input asp-for="PropertyForm.PropertyType" />
+                                </div>
+                                <div class="field-item">
+                                    <label asp-for="PropertyForm.Notes">Notes</label>
+                                    <textarea asp-for="PropertyForm.Notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (Model.SelectedCustomerId.HasValue)
+                    {
+                        <div class="section-block" style="margin-top: 30px;">
+                            <h2 class="section-title">Property Details</h2>
+                            <p class="empty-state">This customer has no properties yet.</p>
+                        </div>
+                    }
+
+                    <div class="button-row">
+                        <button type="submit">Save</button>
+                        <a class="secondary-action-link" asp-page="/Admin/Customers">Back to records</a>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <form method="post">
+                    <input type="hidden" asp-for="Mode" />
+
+                    <div class="section-block">
+                        <h2 class="section-title">Customer Information</h2>
+                        <div class="field-stack">
+                            <div class="field-item">
+                                <label asp-for="CustomerForm.FirstName">First name</label>
+                                <input asp-for="CustomerForm.FirstName" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="CustomerForm.LastName">Last name</label>
+                                <input asp-for="CustomerForm.LastName" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="CustomerForm.Phone">Phone</label>
+                                <input asp-for="CustomerForm.Phone" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="CustomerForm.Email">Email</label>
+                                <input asp-for="CustomerForm.Email" type="email" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-block" style="margin-top: 30px;">
+                        <h2 class="section-title">Property Details</h2>
+                        <div class="field-stack">
+                            <div class="field-item">
+                                <label asp-for="PropertyForm.AddressLine1">Address line 1</label>
+                                <input asp-for="PropertyForm.AddressLine1" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="PropertyForm.AddressLine2">Address line 2</label>
+                                <input asp-for="PropertyForm.AddressLine2" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="PropertyForm.City">City</label>
+                                <input asp-for="PropertyForm.City" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="PropertyForm.State">State</label>
+                                <input asp-for="PropertyForm.State" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="PropertyForm.PostalCode">Postal code</label>
+                                <input asp-for="PropertyForm.PostalCode" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="PropertyForm.PropertyType">Property type</label>
+                                <input asp-for="PropertyForm.PropertyType" />
+                            </div>
+                            <div class="field-item">
+                                <label asp-for="PropertyForm.Notes">Notes</label>
+                                <textarea asp-for="PropertyForm.Notes" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-row">
+                        <button type="submit">Save Customer & Property</button>
+                        <a class="secondary-action-link" asp-page="/Admin/Customers">Back to records</a>
+                    </div>
+                </form>
+            }
+        </div>

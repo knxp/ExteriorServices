@@ -1,26 +1,68 @@
 @page
 @model IndexModel
 
-<h1>ExteriorServices Dashboard</h1>
-
-@if (Model.Dashboard is null)
-{
-    <p>Loading dashboard...</p>
-}
-else
-{
-    <div>
-        <div>
-            <h2>Total Customers</h2>
-            <p>@Model.Dashboard.TotalCustomers</p>
-        </div>
-        <div>
-            <h2>Active Customers</h2>
-            <p>@Model.Dashboard.ActiveCustomers</p>
-        </div>
-        <div>
-            <h2>Total Properties</h2>
-            <p>@Model.Dashboard.TotalProperties</p>
-        </div>
+<div class="panel">
+    <div class="page-hero">
+        <div class="eyebrow">Overview</div>
+        <h1 class="title">ExteriorServices Dashboard</h1>
+        <p class="subtitle">Operate your customer pipeline and property records from a cleaner, faster workspace.</p>
     </div>
-}
+</div>
+
+<div class="panel">
+    <h2 class="section-title">Quick access</h2>
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+        <a class="primary-action-link" href="/admin/customers"
+           style="min-height:120px; flex-direction:column; align-items:flex-start; justify-content:flex-end; text-align:left; padding:20px;">
+            <span style="font-size:12px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.8;">Records</span>
+            <span style="font-size:24px; margin-top:8px;">Customers</span>
+        </a>
+
+        <a class="secondary-action-link" href="/admin/customers/manage?mode=add"
+           style="min-height:120px; flex-direction:column; align-items:flex-start; justify-content:flex-end; text-align:left; padding:20px;">
+            <span style="font-size:12px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.8;">Create</span>
+            <span style="font-size:24px; margin-top:8px;">New Customer</span>
+        </a>
+
+        <a class="secondary-action-link" href="/admin/customers/manage?mode=edit"
+           style="min-height:120px; flex-direction:column; align-items:flex-start; justify-content:flex-end; text-align:left; padding:20px;">
+            <span style="font-size:12px; letter-spacing:0.12em; text-transform:uppercase; opacity:0.8;">Update</span>
+            <span style="font-size:24px; margin-top:8px;">Edit Records</span>
+        </a>
+    </div>
+</div>
+
+<div class="panel">
+    <h2 class="section-title">At a glance</h2>
+
+    @if (Model.Dashboard is null)
+    {
+        <p class="empty-state">Loading dashboard...</p>
+    }
+    else
+    {
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+            <div class="panel"
+                 style="padding:20px; background: rgba(255,255,255,0.6); border-radius: 18px; box-shadow: none;">
+                <p class="empty-state"
+                   style="padding:0; margin:0 0 8px; font-size:12px; letter-spacing:0.12em; text-transform:uppercase;">
+                    Total Customers</p>
+                    <h3 style="margin:0; font-size:2.2rem; letter-spacing:-0.06em;">@Model.Dashboard.TotalCustomers</h3>
+                </div>
+                <div class="panel"
+                     style="padding:20px; background: rgba(255,255,255,0.6); border-radius: 18px; box-shadow: none;">
+                    <p class="empty-state"
+                       style="padding:0; margin:0 0 8px; font-size:12px; letter-spacing:0.12em; text-transform:uppercase;">
+                        Active Customers</p>
+                        <h3 style="margin:0; font-size:2.2rem; letter-spacing:-0.06em;">@Model.Dashboard.ActiveCustomers</h3>
+                    </div>
+                    <div class="panel"
+                         style="padding:20px; background: rgba(255,255,255,0.6); border-radius: 18px; box-shadow: none;">
+                        <p class="empty-state"
+                           style="padding:0; margin:0 0 8px; font-size:12px; letter-spacing:0.12em; text-transform:uppercase;">
+                            Total Properties</p>
+                            <h3 style="margin:0; font-size:2.2rem; letter-spacing:-0.06em;">@Model.Dashboard.TotalProperties</h3>
+                        </div>
+                    </div>
+                }
+            </div>

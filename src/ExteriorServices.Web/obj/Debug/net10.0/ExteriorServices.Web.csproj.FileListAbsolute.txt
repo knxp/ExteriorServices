@@ -27,3 +27,4 @@ R:\2026_projects\ExteriorServices\src\ExteriorServices.Web\obj\Debug\net10.0\ref
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Web\obj\Debug\net10.0\ExteriorServices.Web.pdb
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Web\obj\Debug\net10.0\ExteriorServices.Web.genruntimeconfig.cache
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Web\obj\Debug\net10.0\ref\ExteriorServices.Web.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Web\bin\Debug\net10.0\appsettings.json

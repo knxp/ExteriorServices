@@ -4,10 +4,23 @@ using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:5001";
+
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient<IDashboardApiClient, DashboardApiClient>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5000");
+    client.BaseAddress = new Uri(apiBaseUrl);
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+});
+
+builder.Services.AddHttpClient<ICustomerApiClient, CustomerApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
 });
 
 var app = builder.Build();

@@ -1,0 +1,68 @@
+@page "/admin/customers"
+@model ExteriorServices.Web.Pages.Admin.CustomersModel
+
+<div class="panel">
+    <div class="page-hero">
+        <div class="eyebrow">Operations</div>
+        <h1 class="title">Customer records</h1>
+        <p class="subtitle">Review customer information and property details in one streamlined workspace.</p>
+    </div>
+
+    @if (TempData["CustomerSaved"] is string)
+    {
+        <div class="banner" role="status" aria-live="polite">
+            <span class="banner-dot"></span>
+            <span>@TempData["CustomerSaved"]</span>
+        </div>
+    }
+
+    <div class="hero-actions">
+        <a class="primary-action-link" asp-page="/Admin/CustomerManagement" asp-route-mode="add">New Record</a>
+    </div>
+</div>
+
+<div class="panel">
+    <h2 class="section-title">All Customers</h2>
+    @if (!Model.Customers.Any())
+    {
+        <p class="empty-state">No customers yet.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Properties</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customer in Model.Customers)
+                {
+                    <tr>
+                        <td>@customer.FirstName @customer.LastName</td>
+                        <td>@customer.Phone</td>
+                        <td>@customer.Email</td>
+                        <td>
+                            @if (Model.CustomerProperties.TryGetValue(customer.Id, out var properties) && properties.Any())
+                            {
+                                <ul>
+                                    @foreach (var property in properties)
+                                    {
+                                        <li>@property.AddressLine1, @property.City, @property.State @property.PostalCode</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span>No properties</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

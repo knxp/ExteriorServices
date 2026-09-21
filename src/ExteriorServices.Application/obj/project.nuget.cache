@@ -1,10 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "JdKPxNMjvkc=",
+  "dgSpecHash": "ynBW+j7d7IQ=",
   "success": true,
   "projectFilePath": "R:\\2026_projects\\ExteriorServices\\src\\ExteriorServices.Application\\ExteriorServices.Application.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\keato\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.11\\microsoft.extensions.dependencyinjection.abstractions.10.0.11.nupkg.sha512"
+    "C:\\Users\\keato\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.11\\microsoft.extensions.configuration.abstractions.10.0.11.nupkg.sha512",
+    "C:\\Users\\keato\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.11\\microsoft.extensions.dependencyinjection.abstractions.10.0.11.nupkg.sha512",
+    "C:\\Users\\keato\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.11\\microsoft.extensions.primitives.10.0.11.nupkg.sha512"
   ],
   "logs": []
 }
