@@ -50,6 +50,13 @@ The goal is to stay simple, secure, and measurable. We will build the platform i
 - The system becomes the operational record for service intake and follow-up.
 - Data is organized in a way that supports future quoting, jobs, and analytics.
 
+### Visualization intake note
+
+- A visualization may be generated before customer information is collected, for example during a doorstep demonstration.
+- Customer and property association are optional during generation and can be completed afterward.
+- Once saved, both the source property image and generated visualization are associated with the selected property.
+- Unsaved demonstration sessions should use temporary storage and an expiration policy until they are attached to a property.
+
 ### Validation
 
 - Admin can create, retrieve, update, and deactivate customers successfully.

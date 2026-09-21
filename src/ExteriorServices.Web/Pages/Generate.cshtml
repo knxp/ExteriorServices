@@ -1,0 +1,161 @@
+@page "/generate"
+@model ExteriorServices.Web.Pages.GenerateModel
+
+<div class="panel">
+    <div class="page-hero">
+        <div class="eyebrow">Property Visualization</div>
+        <h1 class="title">Generate a preview</h1>
+    </div>
+</div>
+
+<div class="panel">
+    <h2 class="section-title">Property context</h2>
+    <p class="empty-state" style="margin-bottom:18px;">Customer and property are optional. You can associate this
+        preview later.</p>
+
+        <form method="get" asp-page="/Generate">
+            <div class="field-stack">
+                <div class="field-item">
+                    <label for="customer">Customer</label>
+                    <select id="customer" name="selectedCustomerId" onchange="this.form.submit()">
+                        <option value="">No customer yet</option>
+                        @foreach (var customer in Model.Customers)
+                        {
+                            <option value="@customer.Id"
+                                    selected="@(Model.SelectedCustomerId == customer.Id ? "selected" : null)">
+                                @customer.FirstName @customer.LastName
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="field-item">
+                    <label for="property">Property</label>
+                    <select id="property" name="selectedPropertyId"
+                            disabled="@(Model.SelectedCustomerId.HasValue ? null : "disabled")">
+                        <option value="">@(Model.SelectedCustomerId.HasValue ? "Choose a property" : "Select a customer first")</option>
+                        @foreach (var property in Model.Properties)
+                        {
+                            <option value="@property.Id"
+                                    selected="@(Model.SelectedPropertyId == property.Id ? "selected" : null)">
+                                @property.AddressLine1, @property.City, @property.State @property.PostalCode
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <div class="button-row">
+            <a class="secondary-action-link" href="/admin/customers/manage?mode=add">New customer</a>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2 class="section-title">Property photo</h2>
+        <label class="upload-surface" for="property-photo">
+            <span class="upload-icon">＋</span>
+            <span class="upload-title">Upload or take a photo</span>
+            <span class="upload-copy">Use a clear exterior photo. On mobile, this can open the camera.</span>
+        </label>
+        <input id="property-photo" type="file" accept="image/*" capture="environment" hidden />
+    </div>
+
+    <div class="panel">
+        <div class="top-form-header">
+            <div>
+                <h2 class="section-title" style="margin-bottom:4px;">Design options</h2>
+                <p class="empty-state">Choose the lighting and additions to preview.</p>
+            </div>
+        </div>
+
+        <div class="modifier-list">
+            <div class="modifier-group">
+                <div class="modifier-heading">
+                    <div><strong>C9</strong><span>Classic larger bulbs</span></div>
+                </div>
+                <label class="modifier-option"><span>Gutters</span><span class="modifier-option-controls"><input
+                    type="checkbox" checked /><span class="checkmark"></span><select class="modifier-color"
+                                                                                 aria-label="Gutters C9 color">
+                    <option>Warm white</option>
+                    <option>Green</option>
+                    <option>Red</option>
+                </select></span></label>
+                <label class="modifier-option"><span>All roof edges</span><span class="modifier-option-controls"><input
+                    type="checkbox" checked /><span class="checkmark"></span><select class="modifier-color"
+                                                                                 aria-label="Roof edge C9 color">
+                    <option>Warm white</option>
+                    <option>Green</option>
+                    <option>Red</option>
+                </select></span></label>
+                <label class="modifier-option"><span>Windows</span><span class="modifier-option-controls"><input
+                    type="checkbox" /><span class="checkmark"></span><select class="modifier-color"
+                                                                         aria-label="Windows C9 color">
+                    <option>Warm white</option>
+                    <option>Green</option>
+                    <option>Red</option>
+                </select></span></label>
+            </div>
+
+            <div class="modifier-group">
+                <div class="modifier-heading">
+                    <div><strong>Mini lights</strong><span>Fine, dense light coverage</span></div>
+                </div>
+                <label class="modifier-option"><span>Gutters</span><span class="modifier-option-controls"><input
+                    type="checkbox" /><span class="checkmark"></span><select class="modifier-color"
+                                                                         aria-label="Gutters mini light color">
+                    <option>Warm white</option>
+                    <option>Green</option>
+                    <option>Red</option>
+                </select></span></label>
+                <label class="modifier-option"><span>Bushes</span><span class="modifier-option-controls"><input
+                    type="checkbox" checked /><span class="checkmark"></span><select class="modifier-color"
+                                                                                 aria-label="Bushes mini light color">
+                    <option>Warm white</option>
+                    <option>Green</option>
+                    <option>Red</option>
+                </select></span></label>
+                <label class="modifier-option"><span>Walkways</span><span class="modifier-option-controls"><input
+                    type="checkbox" /><span class="checkmark"></span><select class="modifier-color"
+                                                                         aria-label="Walkways mini light color">
+                    <option>Warm white</option>
+                    <option>Green</option>
+                    <option>Red</option>
+                </select></span></label>
+            </div>
+
+            <div class="modifier-group">
+                <div class="modifier-heading">
+                    <div><strong>Additions</strong><span>Decorative finishing touches</span></div>
+                </div>
+                <label class="modifier-option"><span>Wreath on door</span><input type="checkbox" /><span
+                    class="checkmark"></span></label>
+                    <label class="modifier-option"><span>Garland on windows</span><input type="checkbox" /><span
+                        class="checkmark"></span></label>
+                        <label class="modifier-option"><span>Garland on railing</span><input type="checkbox" /><span
+                            class="checkmark"></span></label>
+                        </div>
+
+                        <div class="design-notes">
+                            <label for="design-notes">Design notes</label>
+                            <textarea id="design-notes" name="designNotes" rows="4"
+                                      placeholder="Add details to include or avoid in the preview..."></textarea>
+                        </div>
+                    </div>
+
+                    <button class="generate-action" id="generate-button" type="button" disabled>Generate</button>
+
+                    <script>
+                            const photoInput = document.getElementById('property-photo');
+                            const generateButton = document.getElementById('generate-button');
+                            const modifierInputs = document.querySelectorAll('.modifier-group input[type="checkbox"]');
+
+                            function updateGenerateState() {
+                                const hasPhoto = photoInput.files.length > 0;
+                                const hasModifier = Array.from(modifierInputs).some(input => input.checked);
+                                generateButton.disabled = !(hasPhoto && hasModifier);
+                            }
+
+                            photoInput.addEventListener('change', updateGenerateState);
+                            modifierInputs.forEach(input => input.addEventListener('change', updateGenerateState));
+                    </script>

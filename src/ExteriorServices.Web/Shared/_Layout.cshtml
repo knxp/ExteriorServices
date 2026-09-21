@@ -32,6 +32,7 @@
             body {
                 margin: 0;
                 height: 100%;
+                overflow-x: hidden;
                 background:
                     radial-gradient(circle at top left, rgba(242, 153, 74, 0.10), transparent 28%),
                     radial-gradient(circle at bottom right, rgba(49, 90, 112, 0.16), transparent 24%),
@@ -65,6 +66,7 @@
             .page-shell {
                 display: grid;
                 gap: 26px;
+                min-width: 0;
             }
 
             .panel {
@@ -74,6 +76,8 @@
                 box-shadow: var(--shadow);
                 padding: 26px 26px 24px;
                 backdrop-filter: blur(8px);
+                min-width: 0;
+                max-width: 100%;
             }
 
             .page-hero {
@@ -340,6 +344,192 @@
                 padding-top: 8px;
             }
 
+            .upload-surface {
+                display: grid;
+                justify-items: center;
+                gap: 8px;
+                padding: 34px 20px;
+                border: 1px dashed rgba(49, 90, 112, 0.42);
+                border-radius: 16px;
+                background: rgba(235, 243, 246, 0.58);
+                color: var(--blue-slate-deep);
+                text-align: center;
+                cursor: pointer;
+                transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+            }
+
+            .upload-surface:hover,
+            .upload-surface:focus-within {
+                border-color: var(--sidebar-accent);
+                background: rgba(242, 153, 74, 0.08);
+                transform: translateY(-1px);
+            }
+
+            .upload-icon {
+                display: grid;
+                place-items: center;
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                background: var(--blue-slate-deep);
+                color: #fff;
+                font-size: 25px;
+                line-height: 1;
+            }
+
+            .upload-title {
+                font-weight: 800;
+            }
+
+            .upload-copy,
+            .modifier-heading span {
+                color: var(--muted);
+                font-size: 13px;
+            }
+
+            .modifier-list {
+                display: grid;
+                gap: 14px;
+            }
+
+            .design-notes {
+                display: grid;
+                gap: 8px;
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .modifier-group {
+                display: grid;
+                gap: 0;
+                overflow: hidden;
+                border: 1px solid var(--line);
+                border-radius: 16px;
+                background: rgba(255, 255, 255, 0.58);
+            }
+
+            .modifier-heading,
+            .modifier-option {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                min-height: 54px;
+                padding: 12px 16px;
+            }
+
+            .modifier-heading {
+                background: rgba(230, 237, 241, 0.7);
+            }
+
+            .modifier-heading>div {
+                display: grid;
+                gap: 2px;
+            }
+
+            .modifier-option {
+                border-top: 1px solid var(--line);
+                cursor: pointer;
+                font-size: 14px;
+            }
+
+            .modifier-option-controls {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                flex-shrink: 0;
+            }
+
+            .modifier-color {
+                width: auto;
+                min-width: 108px;
+                padding: 7px 28px 7px 9px;
+                border-radius: 9px;
+                font-size: 12px;
+            }
+
+            .modifier-option input,
+            .toggle input {
+                position: absolute;
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .checkmark {
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+                border: 1px solid rgba(49, 90, 112, 0.35);
+                border-radius: 6px;
+                background: #fff;
+            }
+
+            .modifier-option input:checked+.checkmark {
+                border-color: var(--blue-slate-deep);
+                background: var(--blue-slate-deep);
+                box-shadow: inset 0 0 0 4px #fff;
+            }
+
+            .toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                color: var(--muted);
+                cursor: pointer;
+                font-size: 12px;
+                text-transform: uppercase;
+            }
+
+            .toggle>span {
+                position: relative;
+                width: 38px;
+                height: 22px;
+                border-radius: 999px;
+                background: rgba(118, 137, 149, 0.32);
+                transition: background 0.2s ease;
+            }
+
+            .toggle>span::after {
+                position: absolute;
+                top: 3px;
+                left: 3px;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background: #fff;
+                content: "";
+                transition: transform 0.2s ease;
+            }
+
+            .toggle input:checked+span {
+                background: var(--sidebar-accent);
+            }
+
+            .toggle input:checked+span::after {
+                transform: translateX(16px);
+            }
+
+            .generate-action {
+                width: 100%;
+                min-height: 56px;
+                margin-top: 0;
+                background: linear-gradient(180deg, var(--sidebar-accent) 0%, var(--sidebar-accent-strong) 100%);
+                font-size: 16px;
+                letter-spacing: 0.01em;
+                transition: filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+            }
+
+            .generate-action:not(:disabled):hover {
+                filter: brightness(1.05);
+                transform: translateY(-1px);
+            }
+
+            button:disabled {
+                cursor: not-allowed;
+                opacity: 0.52;
+                box-shadow: none;
+            }
+
             .sidebar {
                 position: fixed;
                 top: 0;
@@ -462,6 +652,7 @@
                     bottom: 0;
                     left: 0;
                     width: 64px;
+                    z-index: 100;
                 }
 
                 .sidebar.open {
@@ -474,6 +665,8 @@
 
                 main {
                     margin-left: 64px;
+                    margin-right: 0;
+                    width: calc(100% - 64px);
                     max-width: none;
                     padding: 20px 14px 100px;
                 }
@@ -484,6 +677,62 @@
 
                 .panel {
                     padding: 18px;
+                }
+
+                .title {
+                    font-size: 2rem;
+                }
+
+                .subtitle {
+                    font-size: 0.95rem;
+                }
+
+                .top-form-header {
+                    align-items: flex-start;
+                }
+
+                .field-item,
+                .field-item input,
+                .field-item select,
+                .field-item textarea {
+                    min-width: 0;
+                }
+
+                .modifier-heading,
+                .modifier-option {
+                    padding: 11px 12px;
+                }
+
+                .modifier-heading {
+                    align-items: flex-start;
+                }
+
+                .modifier-heading>div {
+                    min-width: 0;
+                }
+
+                .modifier-option-controls {
+                    gap: 7px;
+                    max-width: 100%;
+                }
+
+                .modifier-color {
+                    min-width: 96px;
+                    max-width: 96px;
+                    padding-left: 7px;
+                    padding-right: 20px;
+                }
+
+                .modifier-heading strong,
+                .modifier-heading span,
+                .modifier-option>span:first-child {
+                    min-width: 0;
+                    overflow-wrap: anywhere;
+                }
+
+                .upload-surface {
+                    min-height: 150px;
+                    padding: 26px 14px;
                 }
 
                 th,
@@ -521,6 +770,10 @@
                href="/admin/customers">
                 <span class="nav-icon">📋</span>
                 <span class="nav-label">Customer Records</span>
+            </a>
+            <a class="nav-item @(currentPath.StartsWith("/generate") ? "active" : "")" href="/generate">
+                <span class="nav-icon">📷</span>
+                <span class="nav-label">Generate Preview</span>
             </a>
         </nav>
     </aside>

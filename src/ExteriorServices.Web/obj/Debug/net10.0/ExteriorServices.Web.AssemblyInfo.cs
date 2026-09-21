@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ExteriorServices.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dc7c2202098c2d142950bd2c8bded2cdebbd043b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b1df4514ae6dd2814bb833fa2090242678a8c952")]
 [assembly: System.Reflection.AssemblyProductAttribute("ExteriorServices.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ExteriorServices.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
