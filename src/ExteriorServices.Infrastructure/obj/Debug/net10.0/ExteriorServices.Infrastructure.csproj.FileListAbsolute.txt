@@ -18,3 +18,4 @@ R:\2026_projects\ExteriorServices\src\ExteriorServices.Infrastructure\obj\Debug\
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Infrastructure\obj\Debug\net10.0\ExteriorServices.Infrastructure.genruntimeconfig.cache
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Infrastructure\obj\Debug\net10.0\ref\ExteriorServices.Infrastructure.dll
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Infrastructure\obj\Debug\net10.0\ExteriorServices.Infrastructure.sourcelink.json
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Infrastructure\bin\Debug\net10.0\Visualization\Prompts\property-visualization-default.txt

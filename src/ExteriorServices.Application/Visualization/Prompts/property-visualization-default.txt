@@ -1,0 +1,11 @@
+Transform the supplied exterior house photo into a realistic nighttime visualization of the same property.
+
+Preserve the home's architecture, proportions, perspective, roofline, windows, doors, landscaping, driveway, and surrounding property. Change the scene from daytime to nighttime with believable low-light exposure and natural shadows. Add only the lighting and decorative elements explicitly listed in the modifier instructions. Do not invent, remove, relocate, or alter features that were not requested. Keep every requested installation physically plausible and professionally installed on the existing structure.
+
+The final image should look like a real nighttime customer preview, not an illustration, architectural rendering, advertisement, or fantasy scene. Avoid text, logos, people, vehicles that were not in the source image, extra decorations, and unrequested lighting.
+
+Modifier instructions:
+{{MODIFIERS}}
+
+Additional customer notes:
+{{NOTES}}

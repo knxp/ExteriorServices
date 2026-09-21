@@ -1,0 +1,93 @@
+@page "/Images"
+@model ExteriorServices.Web.Pages.ImagesModel
+
+<div class="panel">
+    <div class="page-hero">
+        <div class="eyebrow">Image Library</div>
+        <h1 class="title">Images</h1>
+        <p class="subtitle">Uploaded property photos and generated previews will appear here.</p>
+    </div>
+</div>
+
+<div class="image-library-loading" id="image-library-loading" role="status" aria-live="polite">
+    <span class="loading-spinner" aria-hidden="true"></span>
+    <span>Loading images...</span>
+</div>
+
+<div class="image-library-grid" id="image-library-grid" hidden></div>
+
+<div class="panel image-library-empty" id="image-library-empty" hidden>
+    <p class="empty-state">No images have been uploaded yet.</p>
+    <a class="secondary-action-link" href="/generate">Open Generate</a>
+</div>
+
+<p class="empty-state" id="image-library-error" role="alert" hidden>
+    Images could not be loaded. Try refreshing the page.
+</p>
+
+<script>
+    const imageLibraryLoading = document.getElementById('image-library-loading');
+    const imageLibraryGrid = document.getElementById('image-library-grid');
+    const imageLibraryEmpty = document.getElementById('image-library-empty');
+    const imageLibraryError = document.getElementById('image-library-error');
+    const imageApiBaseUrl = '@Model.BrowserApiBaseUrl'.replace(/\/$/, '');
+
+    function showLibraryState(state) {
+        imageLibraryLoading.hidden = state !== 'loading';
+        imageLibraryGrid.hidden = state !== 'images';
+        imageLibraryEmpty.hidden = state !== 'empty';
+        imageLibraryError.hidden = state !== 'error';
+    }
+
+    function renderImages(images) {
+        imageLibraryGrid.replaceChildren();
+
+        images.forEach(image => {
+            const card = document.createElement('article');
+            card.className = 'image-library-card';
+
+            const preview = document.createElement('img');
+            const sourceUrl = image.sourceUrl ?? image.SourceUrl;
+            preview.src = `${imageApiBaseUrl}${sourceUrl}`;
+            preview.alt = 'Uploaded property photo';
+            preview.loading = 'lazy';
+
+            const details = document.createElement('div');
+            details.className = 'image-library-card-body';
+
+            const id = document.createElement('strong');
+            const intakeId = image.intakeId ?? image.IntakeId ?? '';
+            id.textContent = intakeId.replaceAll('-', '').slice(0, 8);
+            const date = document.createElement('span');
+            date.textContent = new Date(image.createdAtUtc ?? image.CreatedAtUtc).toLocaleString();
+            const size = document.createElement('span');
+            size.textContent = `${Math.round((image.size ?? image.Size ?? 0) / 1024)} KB`;
+
+            details.append(id, date, size);
+            card.append(preview, details);
+            imageLibraryGrid.append(card);
+        });
+    }
+
+    async function loadImages() {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+
+        try {
+            const response = await fetch(`${imageApiBaseUrl}/api/property-visualizations`, {
+                signal: controller.signal
+            });
+            if (!response.ok) throw new Error('Image request failed');
+
+            const images = await response.json();
+            renderImages(Array.isArray(images) ? images : []);
+            showLibraryState(images.length ? 'images' : 'empty');
+        } catch {
+            showLibraryState('error');
+        } finally {
+            clearTimeout(timeout);
+        }
+    }
+
+    loadImages();
+</script>

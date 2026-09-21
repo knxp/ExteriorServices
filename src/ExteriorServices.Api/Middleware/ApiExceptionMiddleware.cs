@@ -26,6 +26,13 @@ public sealed class ApiExceptionMiddleware
         {
             context.Response.StatusCode = StatusCodes.Status499ClientClosedRequest;
         }
+        catch (VisualizationValidationException exception)
+        {
+            await WriteErrorAsync(
+                context,
+                StatusCodes.Status400BadRequest,
+                new ApiError("VisualizationValidationError", exception.Message));
+        }
         catch (Exception exception)
         {
             _logger.LogError(

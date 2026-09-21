@@ -23,6 +23,14 @@ builder.Services.AddHttpClient<ICustomerApiClient, CustomerApiClient>(client =>
     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
 });
 
+builder.Services.AddHttpClient<IVisualizationImageApiClient, VisualizationImageApiClient>(client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+});
+
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {

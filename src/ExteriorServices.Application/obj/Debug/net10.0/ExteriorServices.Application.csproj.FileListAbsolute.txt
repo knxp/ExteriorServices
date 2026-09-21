@@ -14,3 +14,4 @@ R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ExteriorServices.Application.pdb
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ref\ExteriorServices.Application.dll
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\obj\Debug\net10.0\ExteriorServices.Application.sourcelink.json
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Application\bin\Debug\net10.0\Visualization\Prompts\property-visualization-default.txt

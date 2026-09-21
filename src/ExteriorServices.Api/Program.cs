@@ -4,6 +4,7 @@ using ExteriorServices.Application;
 using ExteriorServices.Application.Configuration;
 using ExteriorServices.Infrastructure;
 using ExteriorServices.Infrastructure.Data;
+using ExteriorServices.Api.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,10 +31,21 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddCors(options => options.AddPolicy("LocalWeb", policy =>
+{
+    policy.WithOrigins(
+            "http://localhost:5010",
+            "https://localhost:5010",
+            "http://192.168.1.68:5010")
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+}));
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddScoped<IPropertyVisualizationIntakeService, LocalPropertyVisualizationIntakeService>();
+builder.Services.AddSingleton<IStoredVisualizationImageService, StoredVisualizationImageService>();
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>
@@ -83,7 +95,11 @@ if (!app.Environment.IsDevelopment())
 app.UseApiExceptionHandling();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+app.UseCors("LocalWeb");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapHealthChecks("/health");
