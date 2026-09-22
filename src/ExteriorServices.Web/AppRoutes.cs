@@ -8,6 +8,7 @@ public static class AppRoutes
     public const string Records = "/admin/records";
     public const string Generate = "/admin/generate";
     public const string Images = "/admin/images";
+    public const string Calendar = "/admin/calendar";
 
     public const string ModeAdd = "add";
     public const string ModeEdit = "edit";

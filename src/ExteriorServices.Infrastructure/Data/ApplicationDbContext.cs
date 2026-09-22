@@ -15,6 +15,8 @@ public class ExteriorServicesDbContext : DbContext
 
     public DbSet<Property> Properties => Set<Property>();
 
+    public DbSet<Job> Jobs => Set<Job>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

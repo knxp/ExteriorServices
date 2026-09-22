@@ -1,4 +1,5 @@
 using ExteriorServices.Application.Customers;
+using ExteriorServices.Application.Jobs;
 using ExteriorServices.Application.Properties;
 using ExteriorServices.Infrastructure.Data;
 using ExteriorServices.Infrastructure.Data.Repositories;
@@ -17,6 +18,7 @@ public static class DependencyInjection
     {
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IPropertyRepository, PropertyRepository>();
+        services.AddScoped<IJobRepository, JobRepository>();
         services.AddScoped<Application.Dashboard.IDashboardRepository, DashboardRepository>();
 
         var connectionString = ResolveConnectionString(configuration);

@@ -8,6 +8,7 @@ public static class DependencyInjection
     {
         services.AddScoped<Customers.ICustomerService, Customers.CustomerService>();
         services.AddScoped<Properties.IPropertyService, Properties.PropertyService>();
+        services.AddScoped<Jobs.IJobService, Jobs.JobService>();
         services.AddScoped<Dashboard.IDashboardService, Dashboard.DashboardService>();
 
         return services;

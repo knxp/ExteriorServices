@@ -197,6 +197,12 @@
                 transform: translateY(-1px);
             }
 
+            input[readonly] {
+                background: rgba(230, 237, 241, 0.7);
+                color: var(--muted);
+                cursor: not-allowed;
+            }
+
             textarea {
                 resize: vertical;
                 min-height: 90px;
@@ -644,6 +650,162 @@
                 background: rgba(255, 255, 255, 0.24);
             }
 
+            .calendar-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                margin-bottom: 18px;
+            }
+
+            .calendar-title {
+                margin: 0;
+                text-align: center;
+                flex: 1;
+            }
+
+            .calendar-weekdays {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 8px;
+                margin-bottom: 8px;
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                text-align: center;
+            }
+
+            .calendar-grid {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 8px;
+            }
+
+            .calendar-day {
+                min-height: 96px;
+                border: 1px solid var(--panel-border);
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.7);
+                padding: 8px;
+                display: grid;
+                align-content: start;
+                gap: 4px;
+            }
+
+            .calendar-day-empty {
+                background: transparent;
+                border-color: transparent;
+            }
+
+            .calendar-day-today {
+                border-color: var(--sidebar-accent);
+                box-shadow: 0 0 0 2px rgba(242, 153, 74, 0.18);
+            }
+
+            .calendar-day-number {
+                font-size: 12px;
+                font-weight: 700;
+                color: var(--muted);
+            }
+
+            .calendar-job-chip {
+                display: block;
+                width: 100%;
+                text-align: left;
+                background: linear-gradient(180deg, var(--blue-slate-deep) 0%, var(--blue-slate) 100%);
+                color: #fff;
+                font-size: 11px;
+                font-weight: 700;
+                padding: 5px 8px;
+                border-radius: 8px;
+                box-shadow: none;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .calendar-job-chip:hover {
+                filter: brightness(1.08);
+            }
+
+            .calendar-job-chip-teardown {
+                background: linear-gradient(180deg, var(--sidebar-accent) 0%, var(--sidebar-accent-strong) 100%);
+            }
+
+            .job-detail-card {
+                display: grid;
+                gap: 10px;
+                max-width: 420px;
+                width: 100%;
+                cursor: default;
+            }
+
+            .job-detail-card ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: grid;
+                gap: 6px;
+                font-size: 14px;
+            }
+
+            @@media (max-width: 720px) {
+                .calendar-weekdays span:nth-child(n) {
+                    font-size: 10px;
+                }
+
+                .calendar-day {
+                    min-height: 72px;
+                    padding: 6px;
+                }
+
+                .calendar-job-chip {
+                    font-size: 10px;
+                }
+            }
+
+            .add-job-panel {
+                padding: 0;
+            }
+
+            .add-job-panel>form {
+                padding: 0 26px 24px;
+            }
+
+            .add-job-summary {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 26px 26px 24px;
+                margin: 0;
+                cursor: pointer;
+                font-size: 1.25rem;
+                font-weight: 700;
+                letter-spacing: -0.03em;
+                list-style: none;
+            }
+
+            .add-job-summary::-webkit-details-marker {
+                display: none;
+            }
+
+            .add-job-caret {
+                transition: transform 0.2s ease;
+                color: var(--muted);
+                font-size: 20px;
+            }
+
+            .add-job-panel[open] .add-job-summary {
+                padding-bottom: 8px;
+            }
+
+            .add-job-panel[open] .add-job-caret {
+                transform: rotate(180deg);
+            }
+
             .image-library-card-body {
                 display: grid;
                 gap: 2px;
@@ -965,6 +1127,11 @@
                 <span class="nav-icon">🖼️</span>
                 <span class="nav-label">Images</span>
             </a>
+            <a class="nav-item @(currentPath.StartsWith(AppRoutes.Calendar, StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+               href="@AppRoutes.Calendar">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">Calendar</span>
+            </a>
         </nav>
     </aside>
 
@@ -999,94 +1166,95 @@
             });
 
             document.addEventListener('click', (event) => {
-                    if (sidebar?.classList.contains('open') && !sidebar.contains(event.target)) {
-                        setOpen(false);
-                    }
-                 });
+                if (sidebar?.classList.contains('open') && !sidebar.contains(event.target)) {
+                    setOpen(false);
+                }
+            });
 
-                function enhanceSearchableSelect(select) {
-                    if (select.dataset.searchEnhanced) {
-                       return;
-                    }
-                    select.dataset.searchEnhanced = 'true';
+            function enhanceSearchableSelect(select) {
+                if (select.dataset.searchEnhanced) {
+                    return;
+                }
+                select.dataset.searchEnhanced = 'true';
 
-                         const wrapper = document.createElement('div');
-                    wrapper.className = 'searchable-select-wrapper';
-                               select.parentNode.insertBefore(wrapper, select);
-                    wrapper.appendChild(select);
-                    select.classList.add('searchable-select-native');
+                const wrapper = document.createElement('div');
+                wrapper.className = 'searchable-select-wrapper';
+                select.parentNode.insertBefore(wrapper, select);
+                wrapper.appendChild(select);
+                select.classList.add('searchable-select-native');
 
-                     const input = document.createElement('input');
-                    input.type = 'text';
-                       input.autocomplete = 'off';
-                    input.placeholder = select.dataset.placeholder       || 'Search by name...';
-                    wrapper.appendChild(input);
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.autocomplete = 'off';
+                input.placeholder = select.dataset.placeholder || 'Search by name...';
+                wrapper.appendChild(input);
 
-                    const list = document.createElement('div');
-                    list.className =    'searchable-select-list';
-                    list.hidden = true;
-                    wrapper.appendChild(list);
+                const list = document.createElement('div');
+                list.className = 'searchable-select-list';
+                list.hidden = true;
+                wrapper.appendChild(list);
 
-                    const options = Array.from(select.options)
-                        .filter(option => option.value !== '')
-                       .map(option => ({ value: option.value, label: option.textContent.trim() }));
+                const options = Array.from(select.options)
+                    .filter(option => option.value !== '')
+                    .map(option => ({ value: option.value, label: option.textContent.trim() }));
 
-                   function syncInputFromSelect() {
-                                  const selected = select.options[select.selectedIndex];
-                        input.value = selected && selected.value !== '' ? selected.textContent.trim() : '';
-                    }
-
-                   function renderList(term) {
-                        const query = term.trim().toLowerCase();
-                        const matches = options.filter(option => option.label.toLowerCase().includes(query));
-                              list.replaceChildren();
-
-                        if (matches.length === 0) {
-                            const empty = document.createElement('div');
-                            empty.className = 'searchable-select-empty';
-                            empty.textContent = 'No matching customers';
-                           list.appendChild(empty);
-                            return;
-                        }
-
-                          matches.forEach(option => {
-                                   const item = document.createElement('button');
-                                    item.type = 'button';
-                                           item.className = 'searchable-select-option';
-                            item.textContent = option.label;                        item.addEventListener('click', () => {
-                                  select.value = option.value;
-                                input.value = option.label;
-                                list.hidden = true;
-                                select.dispatchEvent(new Event('change', { bubbles: true }));
-                            });                            list.appendChild(item);
-                        });
-                    }
-
-                   input.addEventListener('focus', () => {
-                             renderList('');
-                      list.hidden = false;
-                    });
-                    input.addEventListener('input', () => {
-                        renderList(input.value);
-                        list.hidden = false;                });
-                    input.addEventListener('keydown', (event) => {
-                        if         (event.key === 'Escape') {
-                            list.hidden = true;
-                            syncInputFromSelect();
-                        }
-                        });
-
-                    document.addEventListener('click', (event) => {
-                        if (!wrapper.contains(event.target)) {
-                            list.hidden = true;
-                        syncInputFromSelect();
-                        }
-                    });
-
-                    syncInputFromSelect();
+                function syncInputFromSelect() {
+                    const selected = select.options[select.selectedIndex];
+                    input.value = selected && selected.value !== '' ? selected.textContent.trim() : '';
                 }
 
-                document.querySelectorAll('select.searchable-select').forEach(enhanceSearchableSelect);
+                function renderList(term) {
+                    const query = term.trim().toLowerCase();
+                    const matches = options.filter(option => option.label.toLowerCase().includes(query));
+                    list.replaceChildren();
+
+                    if (matches.length === 0) {
+                        const empty = document.createElement('div');
+                        empty.className = 'searchable-select-empty';
+                        empty.textContent = 'No matching customers';
+                        list.appendChild(empty);
+                        return;
+                    }
+
+                    matches.forEach(option => {
+                        const item = document.createElement('button');
+                        item.type = 'button';
+                        item.className = 'searchable-select-option';
+                        item.textContent = option.label; item.addEventListener('click', () => {
+                            select.value = option.value;
+                            input.value = option.label;
+                            list.hidden = true;
+                            select.dispatchEvent(new Event('change', { bubbles: true }));
+                        }); list.appendChild(item);
+                    });
+                }
+
+                input.addEventListener('focus', () => {
+                    renderList('');
+                    list.hidden = false;
+                });
+                input.addEventListener('input', () => {
+                    renderList(input.value);
+                    list.hidden = false;
+                });
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        list.hidden = true;
+                        syncInputFromSelect();
+                    }
+                });
+
+                document.addEventListener('click', (event) => {
+                    if (!wrapper.contains(event.target)) {
+                        list.hidden = true;
+                        syncInputFromSelect();
+                    }
+                });
+
+                syncInputFromSelect();
+            }
+
+            document.querySelectorAll('select.searchable-select').forEach(enhanceSearchableSelect);
     </script>
 </body>
 

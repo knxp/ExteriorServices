@@ -194,3 +194,4 @@ R:\2026_projects\ExteriorServices\tests\ExteriorServices.UnitTests\bin\Debug\net
 R:\2026_projects\ExteriorServices\tests\ExteriorServices.UnitTests\bin\Debug\net10.0\runtimes\win\lib\net9.0\System.Security.Cryptography.Pkcs.dll
 R:\2026_projects\ExteriorServices\tests\ExteriorServices.UnitTests\bin\Debug\net10.0\ExteriorServices.Infrastructure.dll
 R:\2026_projects\ExteriorServices\tests\ExteriorServices.UnitTests\bin\Debug\net10.0\ExteriorServices.Infrastructure.pdb
+R:\2026_projects\ExteriorServices\tests\ExteriorServices.UnitTests\bin\Debug\net10.0\Visualization\Prompts\property-visualization-default.txt

@@ -1,0 +1,318 @@
+@page "/admin/calendar"
+@model ExteriorServices.Web.Pages.Admin.CalendarModel
+
+<div class="panel">
+    <div class="page-hero">
+        <div class="eyebrow">Scheduling</div>
+        <h1 class="title">Calendar</h1>
+        <p class="subtitle">Track contact, install, and teardown dates for every job in one view.</p>
+    </div>
+</div>
+
+@if (TempData["JobSaved"] is string)
+{
+    <div class="banner" role="status" aria-live="polite">
+        <span class="banner-dot"></span>
+        <span>@TempData["JobSaved"]</span>
+    </div>
+}
+
+<div class="panel">
+    <div class="calendar-header">
+        <button class="secondary-action-link" id="calendar-prev" type="button"
+                aria-label="Previous month">&larr;</button>
+        <h2 class="section-title calendar-title" id="calendar-title"></h2>
+        <button class="secondary-action-link" id="calendar-next" type="button" aria-label="Next month">&rarr;</button>
+    </div>
+
+    <div class="calendar-weekdays">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+    </div>
+
+    <div class="calendar-grid" id="calendar-grid"></div>
+</div>
+
+<details class="panel add-job-panel" open="@(Model.SelectedCustomerId.HasValue ? "open" : null)">
+    <summary class="add-job-summary">
+        <span>Add a job</span>
+        <span class="add-job-caret" aria-hidden="true">⌄</span>
+    </summary>
+
+    <form method="get" asp-page="/Admin/Calendar">
+        <div class="field-stack">
+            <div class="field-item">
+                <label for="job-customer">Customer</label>
+                <select id="job-customer" name="SelectedCustomerId" class="searchable-select"
+                        data-placeholder="Search customers by name..." onchange="this.form.submit()">
+                    <option value="">Choose a customer</option>
+                    @foreach (var customer in Model.Customers)
+                    {
+                        <option value="@customer.Id"
+                                selected="@(Model.SelectedCustomerId == customer.Id ? "selected" : null)">
+                            @customer.FirstName @customer.LastName
+                        </option>
+                    }
+                </select>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.SelectedCustomerId.HasValue && Model.CustomerProperties.Count > 0)
+    {
+        <form method="get" asp-page="/Admin/Calendar">
+            <input type="hidden" name="SelectedCustomerId" value="@Model.SelectedCustomerId" />
+            <div class="field-stack">
+                <div class="field-item">
+                    <label for="job-property">Property</label>
+                    <select id="job-property" name="SelectedPropertyId" onchange="this.form.submit()">
+                        <option value="">Choose a property</option>
+                        @foreach (var property in Model.CustomerProperties)
+                        {
+                            <option value="@property.Id"
+                                    selected="@(Model.SelectedPropertyId == property.Id ? "selected" : null)">
+                                @property.AddressLine1, @property.City @property.PostalCode
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </form>
+    }
+    else if (Model.SelectedCustomerId.HasValue)
+    {
+        <p class="empty-state" style="padding: 0 26px;">This customer has no properties yet.</p>
+    }
+
+    <form method="post">
+        <input type="hidden" name="SelectedCustomerId" value="@Model.SelectedCustomerId" />
+        <input type="hidden" name="SelectedPropertyId" value="@Model.SelectedPropertyId" />
+        <div class="field-stack">
+            <div class="field-item">
+                <label asp-for="JobForm.FirstName">First name</label>
+                <input asp-for="JobForm.FirstName" readonly />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.LastName">Last name</label>
+                <input asp-for="JobForm.LastName" readonly />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.Phone">Phone</label>
+                <input asp-for="JobForm.Phone" readonly />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.AddressLine1">Address line 1</label>
+                <input asp-for="JobForm.AddressLine1" readonly />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.City">City</label>
+                <input asp-for="JobForm.City" readonly />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.PostalCode">Postal code</label>
+                <input asp-for="JobForm.PostalCode" readonly />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.Estimate">Estimate</label>
+                <input asp-for="JobForm.Estimate" type="number" step="0.01" min="0" />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.UpFront">Up front</label>
+                <input asp-for="JobForm.UpFront" type="number" step="0.01" min="0" />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.JobTotal">Job total</label>
+                <input asp-for="JobForm.JobTotal" type="number" step="0.01" min="0" />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.ContactDate">Contact date</label>
+                <input asp-for="JobForm.ContactDate" type="date" />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.InstallDate">Install date</label>
+                <input asp-for="JobForm.InstallDate" type="date" />
+            </div>
+            <div class="field-item">
+                <label asp-for="JobForm.TeardownDate">Teardown date</label>
+                <input asp-for="JobForm.TeardownDate" type="date" />
+            </div>
+        </div>
+
+        <div class="button-row">
+            <button type="submit">Save job</button>
+        </div>
+    </form>
+</details>
+
+<div class="image-lightbox" id="job-detail-modal" hidden>
+    <div class="panel job-detail-card" id="job-detail-card"></div>
+</div>
+
+<script>
+    const CALENDAR_SCROLL_KEY = 'calendarScrollY';
+
+    document.querySelectorAll('.add-job-panel form[method="get"]').forEach(form => {
+        form.addEventListener('submit', () => {
+            sessionStorage.setItem(CALENDAR_SCROLL_KEY, String(window.scrollY));
+        });
+    });
+
+    const jobs = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Jobs, new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        }));
+
+    const calendarGrid = document.getElementById('calendar-grid');
+    const calendarTitle = document.getElementById('calendar-title');
+    const calendarPrev = document.getElementById('calendar-prev');
+    const calendarNext = document.getElementById('calendar-next');
+    const jobDetailModal = document.getElementById('job-detail-modal');
+    const jobDetailCard = document.getElementById('job-detail-card');
+
+    const today = new Date();
+    let viewYear = today.getFullYear();
+    let viewMonth = today.getMonth();
+
+    function jobDateKey(dateValue) {
+        const date = new Date(dateValue);
+        return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    }
+
+    function jobsByDate() {
+        const map = new Map();
+
+        function addEntry(dateValue, job, eventType) {
+            if (!dateValue) return;
+            const key = jobDateKey(dateValue);
+            if (!map.has(key)) map.set(key, []);
+            map.get(key).push({ job, eventType });
+        }
+
+        jobs.forEach(job => {
+            addEntry(job.installDate ?? job.contactDate, job, job.installDate ? 'install' : 'contact');
+            if (job.teardownDate) {
+                addEntry(job.teardownDate, job, 'teardown');
+            }
+        });
+
+        return map;
+    }
+
+    function formatCurrency(value) {
+        return `$${Number(value ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function formatDate(value) {
+        return value ? new Date(value).toLocaleDateString() : 'Not set';
+    }
+
+    function openJobDetail(job) {
+        jobDetailCard.innerHTML = '';
+
+        const heading = document.createElement('h2');
+        heading.className = 'section-title';
+        heading.textContent = `${job.firstName} ${job.lastName}`;
+
+        const address = document.createElement('p');
+        address.className = 'empty-state';
+        address.textContent = `${job.addressLine1}, ${job.city} ${job.postalCode}`;
+
+        const list = document.createElement('ul');
+        const fields = [
+            ['Phone', job.phone ?? 'Not provided'],
+            ['Estimate', formatCurrency(job.estimate)],
+            ['Up front', formatCurrency(job.upFront)],
+            ['Job total', formatCurrency(job.jobTotal)],
+            ['Contact date', formatDate(job.contactDate)],
+            ['Install date', formatDate(job.installDate)],
+            ['Teardown date', formatDate(job.teardownDate)]
+        ];
+        fields.forEach(([label, value]) => {
+            const item = document.createElement('li');
+            item.innerHTML = `<strong>${label}:</strong> ${value}`;
+            list.appendChild(item);
+        });
+
+        jobDetailCard.append(heading, address, list);
+        jobDetailModal.hidden = false;
+    }
+
+    jobDetailModal.addEventListener('click', (event) => {
+        if (event.target === jobDetailModal) {
+            jobDetailModal.hidden = true;
+        }
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !jobDetailModal.hidden) {
+            jobDetailModal.hidden = true;
+        }
+    });
+
+    function renderCalendar() {
+        const monthMap = jobsByDate();
+        const firstOfMonth = new Date(viewYear, viewMonth, 1);
+        const startOffset = firstOfMonth.getDay();
+        const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+        calendarTitle.textContent = firstOfMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+        calendarGrid.replaceChildren();
+
+        for (let i = 0; i < startOffset; i++) {
+            const filler = document.createElement('div');
+            filler.className = 'calendar-day calendar-day-empty';
+            calendarGrid.appendChild(filler);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const cell = document.createElement('div');
+            cell.className = 'calendar-day';
+
+            const isToday = viewYear === today.getFullYear() && viewMonth === today.getMonth() && day === today.getDate();
+            if (isToday) cell.classList.add('calendar-day-today');
+
+            const dayNumber = document.createElement('span');
+            dayNumber.className = 'calendar-day-number';
+            dayNumber.textContent = day;
+            cell.appendChild(dayNumber);
+
+            const key = `${viewYear}-${viewMonth}-${day}`;
+            const dayEntries = monthMap.get(key) ?? [];
+            dayEntries.forEach(({ job, eventType }) => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = eventType === 'teardown' ? 'calendar-job-chip calendar-job-chip-teardown' : 'calendar-job-chip';
+                const icon = eventType === 'teardown' ? '🧹' : '📌';
+                chip.textContent = `${icon} ${job.firstName} ${job.lastName}`;
+                chip.addEventListener('click', () => openJobDetail(job));
+                cell.appendChild(chip);
+            });
+
+            calendarGrid.appendChild(cell);
+        }
+    }
+
+    calendarPrev.addEventListener('click', () => {
+        viewMonth -= 1;
+        if (viewMonth < 0) {
+            viewMonth = 11;
+            viewYear -= 1;
+        }
+        renderCalendar();
+    });
+
+    calendarNext.addEventListener('click', () => {
+        viewMonth += 1;
+        if (viewMonth > 11) {
+            viewMonth = 0;
+            viewYear += 1;
+        }
+        renderCalendar();
+    });
+
+    renderCalendar();
+
+    const savedScrollY = sessionStorage.getItem(CALENDAR_SCROLL_KEY);
+    if (savedScrollY !== null) {
+        sessionStorage.removeItem(CALENDAR_SCROLL_KEY);
+        window.scrollTo(0, Number(savedScrollY));
+    }
+</script>
