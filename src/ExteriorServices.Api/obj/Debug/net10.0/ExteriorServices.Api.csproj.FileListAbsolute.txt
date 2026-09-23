@@ -218,3 +218,6 @@ R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\App
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\App_Data\visualizations\2f2099107efc4428af21dd0e943e7756.json
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\App_Data\visualizations\0e89752269cb4ae0b9d0e7982ec9a2fb.json
 R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\App_Data\visualizations\9250ba3ae6b5432ab221bd7f2d0332a5.json
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\Azure.Storage.Blobs.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\Azure.Storage.Common.dll
+R:\2026_projects\ExteriorServices\src\ExteriorServices.Api\bin\Debug\net10.0\System.IO.Hashing.dll

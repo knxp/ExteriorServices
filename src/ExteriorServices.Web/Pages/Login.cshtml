@@ -1,0 +1,70 @@
+@page "/login"
+@model ExteriorServices.Web.Pages.LoginModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign in - ExteriorServices</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #edf4f7 0%, #ddeaf1 36%, #d8e3eb 100%);
+        }
+        .card {
+            width: 100%;
+            max-width: 340px;
+            background: #fff;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 22px 48px rgba(22, 36, 46, 0.18);
+        }
+        h1 { font-size: 1.3rem; margin: 0 0 20px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(118, 137, 149, 0.4);
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            background: #234b62;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .error { color: #b3261e; font-size: 13px; margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Sign in</h1>
+        <form method="post">
+            <input type="hidden" asp-for="ReturnUrl" />
+            <label for="Username">Username</label>
+            <input type="text" id="Username" asp-for="Username" autocomplete="username" autofocus />
+            <label for="Password">Password</label>
+            <input type="password" id="Password" asp-for="Password" autocomplete="current-password" />
+            <button type="submit">Sign in</button>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <p class="error">Invalid username or password.</p>
+            }
+        </form>
+    </div>
+</body>
+</html>

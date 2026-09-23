@@ -31,6 +31,11 @@ public class CustomersModel : PageModel
 
     public async Task<IActionResult> OnPostCustomerAsync(CancellationToken cancellationToken)
     {
+        if (!User.IsInRole("Admin"))
+        {
+            return Forbid();
+        }
+
         if (!ModelState.IsValid)
         {
             await LoadAsync(cancellationToken);
@@ -44,6 +49,11 @@ public class CustomersModel : PageModel
 
     public async Task<IActionResult> OnPostPropertyAsync(CancellationToken cancellationToken)
     {
+        if (!User.IsInRole("Admin"))
+        {
+            return Forbid();
+        }
+
         if (!ModelState.IsValid)
         {
             await LoadAsync(cancellationToken);

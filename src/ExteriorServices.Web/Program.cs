@@ -1,8 +1,20 @@
+using ExteriorServices.Web.Models;
 using ExteriorServices.Web.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
 
+// One-off CLI helper: `dotnet run -- hash-password <plaintext>` prints a PBKDF2 hash to
+// store in user-secrets/Azure app settings as Auth:AdminPasswordHash / Auth:TestPasswordHash.
+if (args.Length == 2 && args[0] == "hash-password")
+{
+    Console.WriteLine(SitePasswordHasher.Hash(args[1]));
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddUserSecrets<Program>(optional: true);
 
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:5001";
 
@@ -13,6 +25,27 @@ if (!hasExplicitUrls)
 }
 
 builder.Services.AddRazorPages();
+
+builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.SectionName));
+builder.Services.AddScoped<IAccountAuthenticator, AccountAuthenticator>();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.Cookie.Name = "ExteriorServices.Session";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.LoginPath = "/login";
+        options.AccessDeniedPath = "/login";
+        options.ExpireTimeSpan = TimeSpan.FromDays(14);
+        options.SlidingExpiration = true;
+    });
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
 builder.Services.AddHttpClient<IDashboardApiClient, DashboardApiClient>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
@@ -53,6 +86,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapRazorPages();
 
 app.Run();

@@ -1,10 +1,13 @@
 using ExteriorServices.Api.Errors;
 using ExteriorServices.Api.Middleware;
+using ExteriorServices.Api.Configuration;
 using ExteriorServices.Application;
 using ExteriorServices.Application.Configuration;
 using ExteriorServices.Infrastructure;
 using ExteriorServices.Infrastructure.Data;
 using ExteriorServices.Api.Services;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -48,8 +51,28 @@ builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddScoped<IPropertyVisualizationIntakeService, LocalPropertyVisualizationIntakeService>();
-builder.Services.AddSingleton<IStoredVisualizationImageService, StoredVisualizationImageService>();
+
+builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection(AzureStorageOptions.SectionName));
+var azureStorageConnectionString = builder.Configuration["AzureStorage:ConnectionString"];
+if (!string.IsNullOrWhiteSpace(azureStorageConnectionString))
+{
+    var containerName = builder.Configuration["AzureStorage:ContainerName"];
+    containerName = string.IsNullOrWhiteSpace(containerName) ? "visualizations" : containerName;
+    builder.Services.AddSingleton(_ =>
+    {
+        var containerClient = new BlobContainerClient(azureStorageConnectionString, containerName);
+        containerClient.CreateIfNotExists(PublicAccessType.None);
+        return containerClient;
+    });
+    builder.Services.AddScoped<IPropertyVisualizationIntakeService, BlobPropertyVisualizationIntakeService>();
+    builder.Services.AddSingleton<IStoredVisualizationImageService, BlobStoredVisualizationImageService>();
+}
+else
+{
+    builder.Services.AddScoped<IPropertyVisualizationIntakeService, LocalPropertyVisualizationIntakeService>();
+    builder.Services.AddSingleton<IStoredVisualizationImageService, StoredVisualizationImageService>();
+}
+
 builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection(OpenAIOptions.SectionName));
 builder.Services.AddHttpClient(OpenAIPropertyVisualizationRenderingService.HttpClientName, client =>
 {

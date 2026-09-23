@@ -1103,6 +1103,21 @@
 <body>
     @{
         var currentPath = Context.Request.Path.Value ?? "/";
+        var isAdminUser = User.IsInRole("Admin");
+    }
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div style="position:sticky;top:0;z-index:60;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 20px;background:#171d24;color:#fff;font-size:13px;">
+            <span>
+                Signed in as <strong>@User.Identity!.Name</strong>
+                @if (!isAdminUser)
+                {
+                    <span> &middot; viewer account, changes cannot be saved</span>
+                }
+            </span>
+            <a href="/logout" style="color:#f2994a;text-decoration:none;font-weight:700;">Log out</a>
+        </div>
     }
 
     <aside class="sidebar" id="sidebar" aria-label="Main navigation">
@@ -1151,6 +1166,15 @@
             @RenderBody()
         </div>
     </main>
+
+    @if (!isAdminUser)
+    {
+        <script>
+            // Viewer accounts can browse every page but must not be able to submit forms that change data.
+            document.querySelectorAll('form[method="post"] button:not([type="button"]), form[method="post"] input[type="submit"]')
+                .forEach(function (el) { el.disabled = true; });
+        </script>
+    }
 
     <script>
             const sidebar = document.getElementById('sidebar');

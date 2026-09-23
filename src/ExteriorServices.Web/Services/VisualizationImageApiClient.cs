@@ -20,4 +20,9 @@ public sealed class VisualizationImageApiClient : IVisualizationImageApiClient
                    cancellationToken)
                ?? Array.Empty<VisualizationImageSummary>();
     }
+
+    public Task<HttpResponseMessage> IntakeAsync(MultipartFormDataContent content, CancellationToken cancellationToken = default)
+    {
+        return _httpClient.PostAsync("/api/property-visualizations/intake", content, cancellationToken);
+    }
 }

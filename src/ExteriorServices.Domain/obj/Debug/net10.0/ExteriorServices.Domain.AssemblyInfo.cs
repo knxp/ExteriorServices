@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ExteriorServices.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+14ad8b8b832766cf080f9ea360047a475a99149c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6222a31a18c5a76ffb8bc0fbd1a23c0a55ecad78")]
 [assembly: System.Reflection.AssemblyProductAttribute("ExteriorServices.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ExteriorServices.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

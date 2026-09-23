@@ -121,14 +121,23 @@
                             </div>
                         </div>
 
-                        <button class="generate-action" id="generate-button" type="button" disabled>Generate</button>
-                        <p class="empty-state" id="generate-status" role="status" aria-live="polite"></p>
-                        <button class="result-preview" id="result-preview" type="button" hidden
-                                aria-label="Open generated preview full screen">
-                            <img id="result-preview-image" alt="Generated property preview" />
-                        </button>
+                        @if (Model.IsAdmin)
+                        {
+                            <button class="generate-action" id="generate-button" type="button" disabled>Generate</button>
+                            <p class="empty-state" id="generate-status" role="status" aria-live="polite"></p>
+                            <button class="result-preview" id="result-preview" type="button" hidden
+                                    aria-label="Open generated preview full screen">
+                                <img id="result-preview-image" alt="Generated property preview" />
+                            </button>
+                            <form id="antiforgery-form" style="display:none">@Html.AntiForgeryToken()</form>
+                        }
+                        else
+                        {
+                            <p class="empty-state">Preview generation is available to admin accounts only.</p>
+                        }
 
                         <script>
+                                const isAdmin = @(Model.IsAdmin ? "true" : "false");
                                 const photoInput = document.getElementById('property-photo');
                                 const generateButton = document.getElementById('generate-button');
                                 const generateStatus = document.getElementById('generate-status');
@@ -139,6 +148,9 @@
                                 const apiBaseUrl = '@Model.BrowserApiBaseUrl';
 
                                 function updateGenerateState() {
+                                    if (!isAdmin || !generateButton) {
+                                        return;
+                                    }
                                     const hasPhoto = photoInput.files.length > 0;
                                     const hasModifier = Array.from(modifierInputs).some(input => input.checked);
                                     generateButton.disabled = !(hasPhoto && hasModifier);
@@ -156,7 +168,7 @@
                                 });
                                 modifierInputs.forEach(input => input.addEventListener('change', updateGenerateState));
 
-                                generateButton.addEventListener('click', async () => {
+                                generateButton?.addEventListener('click', async () => {
                                     if (generateButton.disabled) {
                                         return;
                                     }
@@ -195,9 +207,12 @@
                                     generateStatus.hidden = false;
                                     generateStatus.textContent = 'Generating your preview with OpenAI... this can take up to a couple minutes.';
 
+                                    const antiforgeryToken = document.querySelector('#antiforgery-form input[name="__RequestVerificationToken"]')?.value;
+
                                     try {
-                                        const response = await fetch(`${apiBaseUrl}/api/property-visualizations/intake`, {
+                                        const response = await fetch('?handler=Intake', {
                                             method: 'POST',
+                                            headers: antiforgeryToken ? { 'RequestVerificationToken': antiforgeryToken } : {},
                                             body: formData
                                         });
 
@@ -221,7 +236,7 @@
                                     }
                                 });
 
-                                resultPreview.addEventListener('click', () => {
+                                resultPreview?.addEventListener('click', () => {
                                     if (resultPreviewImage.requestFullscreen) {
                                         resultPreviewImage.requestFullscreen();
                                     }

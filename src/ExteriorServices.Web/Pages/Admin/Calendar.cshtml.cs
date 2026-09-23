@@ -68,6 +68,11 @@ public class CalendarModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
+        if (!User.IsInRole("Admin"))
+        {
+            return Forbid();
+        }
+
         if (!SelectedCustomerId.HasValue || SelectedCustomerId <= 0)
         {
             ModelState.AddModelError(string.Empty, "Please select a customer for the job.");

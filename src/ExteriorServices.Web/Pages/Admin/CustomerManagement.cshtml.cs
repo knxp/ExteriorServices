@@ -89,6 +89,11 @@ public class CustomerManagementModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
+        if (!User.IsInRole("Admin"))
+        {
+            return Forbid();
+        }
+
         if (!ModelState.IsValid)
         {
             await LoadAsync(cancellationToken);
@@ -176,6 +181,11 @@ public class CustomerManagementModel : PageModel
 
     public async Task<IActionResult> OnPostPropertyAsync(CancellationToken cancellationToken)
     {
+        if (!User.IsInRole("Admin"))
+        {
+            return Forbid();
+        }
+
         var customerId = PropertyForm.CustomerId > 0 ? PropertyForm.CustomerId : SelectedCustomerId ?? 0;
 
         if (customerId <= 0)
