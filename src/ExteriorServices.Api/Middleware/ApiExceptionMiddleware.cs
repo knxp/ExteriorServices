@@ -33,6 +33,15 @@ public sealed class ApiExceptionMiddleware
                 StatusCodes.Status400BadRequest,
                 new ApiError("VisualizationValidationError", exception.Message));
         }
+        catch (VisualizationRenderException exception)
+        {
+            _logger.LogError(exception, "Visualization rendering failed.");
+
+            await WriteErrorAsync(
+                context,
+                StatusCodes.Status502BadGateway,
+                new ApiError("VisualizationRenderError", exception.Message));
+        }
         catch (Exception exception)
         {
             _logger.LogError(

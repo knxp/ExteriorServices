@@ -7,4 +7,6 @@ public interface IStoredVisualizationImageService
     IReadOnlyList<StoredVisualizationImage> List();
 
     (Stream Stream, string ContentType)? OpenSource(Guid intakeId);
+
+    (Stream Stream, string ContentType)? OpenResult(Guid intakeId);
 }

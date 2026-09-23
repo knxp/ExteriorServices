@@ -61,6 +61,8 @@
                 library.</span>
             </label>
             <input id="property-photo" type="file" accept="image/*" hidden />
+            <img id="property-photo-preview" alt="Selected property photo preview" hidden
+                 style="margin-top:12px;max-width:160px;max-height:160px;border-radius:8px;object-fit:cover;" />
         </div>
 
         <div class="panel">
@@ -72,71 +74,45 @@
             </div>
 
             <div class="modifier-list">
-                <div class="modifier-group" data-light-type="C9">
-                    <div class="modifier-heading">
-                        <div><strong>C9</strong><span>Classic larger bulbs</span></div>
+                @foreach (var group in DesignModifierCatalog.LightGroups)
+                {
+                    <div class="modifier-group" data-light-type="@group.LightType">
+                        <div class="modifier-heading">
+                            <div><strong>@group.LightType</strong><span>@group.Description</span></div>
+                        </div>
+                        @foreach (var option in group.Options)
+                        {
+                            <label class="modifier-option" data-placement="@option.Placement"
+                                   data-prompt-template="@option.PromptTemplate">
+                                <span>@option.Label</span>
+                                <span class="modifier-option-controls">
+                                    <input type="checkbox" checked="@(option.DefaultChecked ? "checked" : null)" />
+                                    <span class="checkmark"></span>
+                                    <select class="modifier-color" aria-label="@option.Label @group.LightType color">
+                                        @foreach (var color in DesignModifierCatalog.Colors)
+                                        {
+                                            <option value="@color.Label" data-prompt="@color.PromptText">@color.Label</option>
+                                        }
+                                    </select>
+                                </span>
+                            </label>
+                        }
                     </div>
-                    <label class="modifier-option" data-placement="Gutters"><span>Gutters</span><span
-                        class="modifier-option-controls"><input type="checkbox" checked /><span
-                        class="checkmark"></span><select class="modifier-color" aria-label="Gutters C9 color">
-                        <option>Warm white</option>
-                        <option>Green</option>
-                        <option>Red</option>
-                    </select></span></label>
-                    <label class="modifier-option" data-placement="All roof edges"><span>All roof edges</span><span
-                        class="modifier-option-controls"><input type="checkbox" checked /><span
-                        class="checkmark"></span><select class="modifier-color" aria-label="Roof edge C9 color">
-                        <option>Warm white</option>
-                        <option>Green</option>
-                        <option>Red</option>
-                    </select></span></label>
-                    <label class="modifier-option" data-placement="Windows"><span>Windows</span><span
-                        class="modifier-option-controls"><input type="checkbox" /><span class="checkmark"></span><select
-                        class="modifier-color" aria-label="Windows C9 color">
-                        <option>Warm white</option>
-                        <option>Green</option>
-                        <option>Red</option>
-                    </select></span></label>
-                </div>
-
-                <div class="modifier-group" data-light-type="Mini lights">
-                    <div class="modifier-heading">
-                        <div><strong>Mini lights</strong><span>Fine, dense light coverage</span></div>
-                    </div>
-                    <label class="modifier-option" data-placement="Gutters"><span>Gutters</span><span
-                        class="modifier-option-controls"><input type="checkbox" /><span class="checkmark"></span><select
-                        class="modifier-color" aria-label="Gutters mini light color">
-                        <option>Warm white</option>
-                        <option>Green</option>
-                        <option>Red</option>
-                    </select></span></label>
-                    <label class="modifier-option" data-placement="Bushes"><span>Bushes</span><span
-                        class="modifier-option-controls"><input type="checkbox" checked /><span
-                        class="checkmark"></span><select class="modifier-color" aria-label="Bushes mini light color">
-                        <option>Warm white</option>
-                        <option>Green</option>
-                        <option>Red</option>
-                    </select></span></label>
-                    <label class="modifier-option" data-placement="Walkways"><span>Walkways</span><span
-                        class="modifier-option-controls"><input type="checkbox" /><span class="checkmark"></span><select
-                        class="modifier-color" aria-label="Walkways mini light color">
-                        <option>Warm white</option>
-                        <option>Green</option>
-                        <option>Red</option>
-                    </select></span></label>
-                </div>
+                }
 
                 <div class="modifier-group" data-category="Additions">
                     <div class="modifier-heading">
                         <div><strong>Additions</strong><span>Decorative finishing touches</span></div>
                     </div>
-                    <label class="modifier-option" data-placement="Wreath on door"><span>Wreath on door</span><input
-                        type="checkbox" /><span class="checkmark"></span></label>
-                        <label class="modifier-option" data-placement="Garland on windows"><span>Garland on windows</span><input
-                            type="checkbox" /><span class="checkmark"></span></label>
-                            <label class="modifier-option" data-placement="Garland on railing"><span>Garland on railing</span><input
-                                type="checkbox" /><span class="checkmark"></span></label>
-                            </div>
+                    @foreach (var addition in DesignModifierCatalog.Additions)
+                    {
+                        <label class="modifier-option" data-placement="@addition.Placement" data-prompt="@addition.PromptText">
+                            <span>@addition.Label</span>
+                            <input type="checkbox" checked="@(addition.DefaultChecked ? "checked" : null)" />
+                            <span class="checkmark"></span>
+                        </label>
+                    }
+                </div>
 
                             <div class="design-notes">
                                 <label for="design-notes">Design notes</label>
@@ -158,6 +134,7 @@
                                 const generateStatus = document.getElementById('generate-status');
                                 const resultPreview = document.getElementById('result-preview');
                                 const resultPreviewImage = document.getElementById('result-preview-image');
+                                const photoPreview = document.getElementById('property-photo-preview');
                                 const modifierInputs = document.querySelectorAll('.modifier-group input[type="checkbox"]');
                                 const apiBaseUrl = '@Model.BrowserApiBaseUrl';
 
@@ -167,7 +144,16 @@
                                     generateButton.disabled = !(hasPhoto && hasModifier);
                                 }
 
-                                photoInput.addEventListener('change', updateGenerateState);
+                                photoInput.addEventListener('change', () => {
+                                    if (photoInput.files.length > 0) {
+                                        photoPreview.src = URL.createObjectURL(photoInput.files[0]);
+                                        photoPreview.hidden = false;
+                                    } else {
+                                        photoPreview.hidden = true;
+                                        photoPreview.src = '';
+                                    }
+                                    updateGenerateState();
+                                });
                                 modifierInputs.forEach(input => input.addEventListener('change', updateGenerateState));
 
                                 generateButton.addEventListener('click', async () => {
@@ -185,17 +171,29 @@
 
                                     const selectedModifiers = Array.from(document.querySelectorAll('.modifier-option'))
                                         .filter(option => option.querySelector('input[type="checkbox"]').checked)
-                                        .map(option => ({
-                                            category: option.closest('.modifier-group').dataset.category ?? 'Light type',
-                                            lightType: option.closest('.modifier-group').dataset.lightType ?? null,
-                                            placement: option.dataset.placement,
-                                            color: option.querySelector('.modifier-color')?.value ?? null
-                                        }));
+                                        .map(option => {
+                                            const group = option.closest('.modifier-group');
+                                            const colorSelect = option.querySelector('.modifier-color');
+                                            const selectedColorOption = colorSelect?.selectedOptions[0];
+                                            const promptTemplate = option.dataset.promptTemplate ?? null;
+                                            const prompt = promptTemplate
+                                                ? promptTemplate.replace('{color}', selectedColorOption?.dataset.prompt ?? '')
+                                                : (option.dataset.prompt ?? null);
+
+                                            return {
+                                                category: group.dataset.category ?? 'Light type',
+                                                lightType: group.dataset.lightType ?? null,
+                                                placement: option.dataset.placement,
+                                                color: colorSelect?.value ?? null,
+                                                prompt
+                                            };
+                                        });
 
                                     formData.append('designOptionsJson', JSON.stringify({ modifiers: selectedModifiers }));
                                     formData.append('notes', document.getElementById('design-notes').value);
                                     generateButton.disabled = true;
-                                    generateStatus.textContent = 'Uploading preview request...';
+                                    generateStatus.hidden = false;
+                                    generateStatus.textContent = 'Generating your preview with OpenAI... this can take up to a couple minutes.';
 
                                     try {
                                         const response = await fetch(`${apiBaseUrl}/api/property-visualizations/intake`, {
@@ -208,11 +206,13 @@
                                         }
 
                                         const result = await response.json();
-                                        generateStatus.textContent = 'Image stored. A generated preview will appear here when OpenAI processing is connected.';
-                                        if (result.sourceUrl) {
-                                            resultPreviewImage.src = `${apiBaseUrl}${result.sourceUrl}`;
+                                        if (result.status === 'Completed' && result.resultUrl) {
+                                            resultPreviewImage.src = `${apiBaseUrl}${result.resultUrl}`;
                                             resultPreview.hidden = false;
                                             generateStatus.hidden = true;
+                                        } else {
+                                            generateStatus.textContent = 'The preview could not be generated. Please try again.';
+                                            updateGenerateState();
                                         }
                                     } catch (error) {
                                         generateStatus.hidden = false;

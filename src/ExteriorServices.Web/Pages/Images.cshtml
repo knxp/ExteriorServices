@@ -76,6 +76,9 @@
             const card = document.createElement('article');
             card.className = 'image-library-card';
 
+            const photos = document.createElement('div');
+            photos.className = 'image-library-card-photos';
+
             const preview = document.createElement('img');
             const sourceUrl = image.sourceUrl ?? image.SourceUrl;
             const fullSrc = `${imageApiBaseUrl}${sourceUrl}`;
@@ -83,6 +86,18 @@
             preview.alt = 'Uploaded property photo';
             preview.loading = 'lazy';
             preview.addEventListener('click', () => openLightbox(fullSrc));
+            photos.append(preview);
+
+            const resultUrl = image.resultUrl ?? image.ResultUrl;
+            if (resultUrl) {
+                const resultImg = document.createElement('img');
+                const fullResultSrc = `${imageApiBaseUrl}${resultUrl}`;
+                resultImg.src = fullResultSrc;
+                resultImg.alt = 'AI-generated property preview';
+                resultImg.loading = 'lazy';
+                resultImg.addEventListener('click', () => openLightbox(fullResultSrc));
+                photos.append(resultImg);
+            }
 
             const details = document.createElement('div');
             details.className = 'image-library-card-body';
@@ -96,7 +111,7 @@
             size.textContent = `${Math.round((image.size ?? image.Size ?? 0) / 1024)} KB`;
 
             details.append(id, date, size);
-            card.append(preview, details);
+            card.append(photos, details);
             imageLibraryGrid.append(card);
         });
     }

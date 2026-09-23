@@ -8,6 +8,8 @@ public sealed class PropertyVisualizationIntakeResponse
 
     public string SourceUrl { get; init; } = string.Empty;
 
+    public string? ResultUrl { get; init; }
+
     public int? CustomerId { get; init; }
 
     public int? PropertyId { get; init; }

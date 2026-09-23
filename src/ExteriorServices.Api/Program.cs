@@ -11,6 +11,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// User secrets are only auto-loaded when ASPNETCORE_ENVIRONMENT=Development, but this app
+// runs without launchSettings.json, so load them explicitly regardless of environment.
+builder.Configuration.AddUserSecrets<Program>(optional: true);
+
 AppConfigurationValidator.Validate(builder.Configuration);
 
 var hasExplicitUrls = !string.IsNullOrWhiteSpace(builder.Configuration["urls"]);
@@ -46,6 +50,13 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<IPropertyVisualizationIntakeService, LocalPropertyVisualizationIntakeService>();
 builder.Services.AddSingleton<IStoredVisualizationImageService, StoredVisualizationImageService>();
+builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection(OpenAIOptions.SectionName));
+builder.Services.AddHttpClient(OpenAIPropertyVisualizationRenderingService.HttpClientName, client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com/v1/");
+    client.Timeout = TimeSpan.FromMinutes(3);
+});
+builder.Services.AddScoped<IPropertyVisualizationRenderingService, OpenAIPropertyVisualizationRenderingService>();
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>

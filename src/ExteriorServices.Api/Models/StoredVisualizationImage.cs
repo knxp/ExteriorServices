@@ -6,6 +6,10 @@ public sealed class StoredVisualizationImage
 
     public string SourceUrl { get; init; } = string.Empty;
 
+    public string? ResultUrl { get; init; }
+
+    public string Status { get; init; } = "Completed";
+
     public int? CustomerId { get; init; }
 
     public int? PropertyId { get; init; }

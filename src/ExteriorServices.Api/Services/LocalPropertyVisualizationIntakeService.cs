@@ -15,10 +15,17 @@ public sealed class LocalPropertyVisualizationIntakeService : IPropertyVisualiza
 
     private const long MaxImageSizeBytes = 10 * 1024 * 1024;
     private readonly IWebHostEnvironment _environment;
+    private readonly IPropertyVisualizationRenderingService _renderingService;
+    private readonly ILogger<LocalPropertyVisualizationIntakeService> _logger;
 
-    public LocalPropertyVisualizationIntakeService(IWebHostEnvironment environment)
+    public LocalPropertyVisualizationIntakeService(
+        IWebHostEnvironment environment,
+        IPropertyVisualizationRenderingService renderingService,
+        ILogger<LocalPropertyVisualizationIntakeService> logger)
     {
         _environment = environment;
+        _renderingService = renderingService;
+        _logger = logger;
     }
 
     public async Task<PropertyVisualizationIntakeResponse> IntakeAsync(
@@ -66,8 +73,42 @@ public sealed class LocalPropertyVisualizationIntakeService : IPropertyVisualiza
         var storagePath = Path.Combine(storageDirectory, $"{intakeId:N}{extension}");
 
         await using var sourceStream = image.OpenReadStream();
-        await using var destinationStream = File.Create(storagePath);
-        await sourceStream.CopyToAsync(destinationStream, cancellationToken);
+        await using (var destinationStream = File.Create(storagePath))
+        {
+            await sourceStream.CopyToAsync(destinationStream, cancellationToken);
+        }
+
+        var status = "Completed";
+        string? errorMessage = null;
+        string? resultExtension = null;
+
+        try
+        {
+            var prompt = VisualizationPromptBuilder.Build(request.DesignOptionsJson, request.Notes);
+
+            await using var renderSourceStream = File.OpenRead(storagePath);
+            var renderResult = await _renderingService.RenderAsync(
+                renderSourceStream,
+                image.ContentType,
+                prompt,
+                cancellationToken);
+
+            resultExtension = renderResult.ContentType switch
+            {
+                "image/webp" => ".webp",
+                "image/jpeg" => ".jpg",
+                _ => ".png"
+            };
+
+            var resultPath = Path.Combine(storageDirectory, $"{intakeId:N}-generated{resultExtension}");
+            await File.WriteAllBytesAsync(resultPath, renderResult.ImageBytes, cancellationToken);
+        }
+        catch (VisualizationRenderException exception)
+        {
+            _logger.LogError(exception, "Failed to render OpenAI visualization for intake {IntakeId}.", intakeId);
+            status = "Failed";
+            errorMessage = exception.Message;
+        }
 
         var metadata = new
         {
@@ -78,7 +119,9 @@ public sealed class LocalPropertyVisualizationIntakeService : IPropertyVisualiza
             request.Notes,
             image.ContentType,
             image.Length,
-            createdAtUtc = DateTime.UtcNow
+            createdAtUtc = DateTime.UtcNow,
+            status,
+            errorMessage
         };
 
         var metadataPath = Path.Combine(storageDirectory, $"{intakeId:N}.json");
@@ -90,7 +133,9 @@ public sealed class LocalPropertyVisualizationIntakeService : IPropertyVisualiza
         return new PropertyVisualizationIntakeResponse
         {
             IntakeId = intakeId,
+            Status = status,
             SourceUrl = $"/api/property-visualizations/{intakeId}/source",
+            ResultUrl = status == "Completed" ? $"/api/property-visualizations/{intakeId}/result" : null,
             CustomerId = request.CustomerId,
             PropertyId = request.PropertyId,
             CreatedAtUtc = DateTime.UtcNow

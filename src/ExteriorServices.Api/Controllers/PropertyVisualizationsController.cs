@@ -42,4 +42,11 @@ public sealed class PropertyVisualizationsController : ControllerBase
         var image = _imageService.OpenSource(intakeId);
         return image is null ? NotFound() : File(image.Value.Stream, image.Value.ContentType);
     }
+
+    [HttpGet("{intakeId:guid}/result")]
+    public IActionResult Result(Guid intakeId)
+    {
+        var image = _imageService.OpenResult(intakeId);
+        return image is null ? NotFound() : File(image.Value.Stream, image.Value.ContentType);
+    }
 }

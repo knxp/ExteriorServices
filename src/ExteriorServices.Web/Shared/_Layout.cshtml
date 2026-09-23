@@ -609,6 +609,17 @@
                 cursor: zoom-in;
             }
 
+            .image-library-card-photos {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1px;
+                background: var(--panel-border);
+            }
+
+            .image-library-card-photos:has(img:only-child) {
+                grid-template-columns: 1fr;
+            }
+
             .image-lightbox {
                 position: fixed;
                 inset: 0;

@@ -45,6 +45,24 @@ public sealed class StoredVisualizationImageService : IStoredVisualizationImageS
         return (File.OpenRead(path), contentType);
     }
 
+    public (Stream Stream, string ContentType)? OpenResult(Guid intakeId)
+    {
+        var path = FindResultPath(intakeId);
+        if (path is null)
+        {
+            return null;
+        }
+
+        var contentType = Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".webp" => "image/webp",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            _ => "image/png"
+        };
+
+        return (File.OpenRead(path), contentType);
+    }
+
     private StoredVisualizationImage? ReadMetadata(string metadataPath)
     {
         try
@@ -58,11 +76,14 @@ public sealed class StoredVisualizationImageService : IStoredVisualizationImageS
             var createdAtUtc = GetProperty(root, "createdAtUtc").GetDateTime();
             var customerId = ReadNullableInt(root, "CustomerId");
             var propertyId = ReadNullableInt(root, "PropertyId");
+            var status = TryGetProperty(root, "status")?.GetString() ?? "Completed";
 
             return new StoredVisualizationImage
             {
                 IntakeId = intakeId,
                 SourceUrl = $"/api/property-visualizations/{intakeId}/source",
+                ResultUrl = status == "Completed" ? $"/api/property-visualizations/{intakeId}/result" : null,
+                Status = status,
                 CustomerId = customerId,
                 PropertyId = propertyId,
                 ContentType = contentType,
@@ -101,6 +122,17 @@ public sealed class StoredVisualizationImageService : IStoredVisualizationImageS
 
         return Directory.EnumerateFiles(_storageDirectory, $"{intakeId:N}.*")
             .FirstOrDefault(path => !path.EndsWith(".json", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string? FindResultPath(Guid intakeId)
+    {
+        if (!Directory.Exists(_storageDirectory))
+        {
+            return null;
+        }
+
+        return Directory.EnumerateFiles(_storageDirectory, $"{intakeId:N}-generated.*")
+            .FirstOrDefault();
     }
 
     private static int? ReadNullableInt(JsonElement root, string propertyName)
