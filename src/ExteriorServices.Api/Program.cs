@@ -43,7 +43,8 @@ builder.Services.AddCors(options => options.AddPolicy("LocalWeb", policy =>
     policy.WithOrigins(
             "http://localhost:5010",
             "https://localhost:5010",
-            "http://192.168.1.68:5010")
+            "http://192.168.1.68:5010",
+            "https://exteriorservices-web-hyemffhacnendzgs.centralus-01.azurewebsites.net")
         .AllowAnyHeader()
         .AllowAnyMethod();
 }));
