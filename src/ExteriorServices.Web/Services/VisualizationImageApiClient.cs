@@ -25,4 +25,14 @@ public sealed class VisualizationImageApiClient : IVisualizationImageApiClient
     {
         return _httpClient.PostAsync("/api/property-visualizations/intake", content, cancellationToken);
     }
+
+    public Task<HttpResponseMessage> ReviseAsync(Guid intakeId, string notes, CancellationToken cancellationToken = default)
+    {
+        return _httpClient.PostAsJsonAsync($"/api/property-visualizations/{intakeId}/revise", new { notes }, cancellationToken);
+    }
+
+    public Task<HttpResponseMessage> ApproveAsync(Guid intakeId, CancellationToken cancellationToken = default)
+    {
+        return _httpClient.PostAsync($"/api/property-visualizations/{intakeId}/approve", null, cancellationToken);
+    }
 }

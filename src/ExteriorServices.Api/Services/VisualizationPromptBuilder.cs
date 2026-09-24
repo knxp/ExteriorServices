@@ -41,6 +41,11 @@ public static class VisualizationPromptBuilder
         return builder.ToString();
     }
 
+    public static string BuildRevision(string notes)
+    {
+        return "Take this edited image and make the following minor adjustments: " + notes.Trim();
+    }
+
     private static List<string> ParsePlacements(string? designOptionsJson)
     {
         var placements = new List<string>();

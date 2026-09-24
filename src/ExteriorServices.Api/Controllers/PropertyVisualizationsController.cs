@@ -10,13 +10,16 @@ public sealed class PropertyVisualizationsController : ControllerBase
 {
     private readonly IPropertyVisualizationIntakeService _intakeService;
     private readonly IStoredVisualizationImageService _imageService;
+    private readonly IPropertyVisualizationRevisionService _revisionService;
 
     public PropertyVisualizationsController(
         IPropertyVisualizationIntakeService intakeService,
-        IStoredVisualizationImageService imageService)
+        IStoredVisualizationImageService imageService,
+        IPropertyVisualizationRevisionService revisionService)
     {
         _intakeService = intakeService;
         _imageService = imageService;
+        _revisionService = revisionService;
     }
 
     [HttpPost("intake")]
@@ -48,5 +51,31 @@ public sealed class PropertyVisualizationsController : ControllerBase
     {
         var image = _imageService.OpenResult(intakeId);
         return image is null ? NotFound() : File(image.Value.Stream, image.Value.ContentType);
+    }
+
+    [HttpGet("{intakeId:guid}/revision")]
+    public IActionResult Revision(Guid intakeId)
+    {
+        var image = _imageService.OpenRevision(intakeId);
+        return image is null ? NotFound() : File(image.Value.Stream, image.Value.ContentType);
+    }
+
+    [HttpPost("{intakeId:guid}/revise")]
+    public async Task<ActionResult<StoredVisualizationImage>> Revise(
+        Guid intakeId,
+        [FromBody] VisualizationReviseRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _revisionService.ReviseAsync(intakeId, request.Notes, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("{intakeId:guid}/approve")]
+    public async Task<ActionResult<StoredVisualizationImage>> Approve(
+        Guid intakeId,
+        CancellationToken cancellationToken)
+    {
+        var result = await _revisionService.ApproveAsync(intakeId, cancellationToken);
+        return Ok(result);
     }
 }

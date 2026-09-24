@@ -88,5 +88,52 @@ public class GenerateModel : PageModel
             StatusCode = (int)apiResponse.StatusCode
         };
     }
+
+    // Proxies the revision request server-side for the same reasons as OnPostIntakeAsync.
+    public async Task<IActionResult> OnPostReviseAsync([FromBody] ReviseRequestBody request, CancellationToken cancellationToken)
+    {
+        if (!IsAdmin)
+        {
+            return Forbid();
+        }
+
+        var apiResponse = await _visualizationImageApiClient.ReviseAsync(request.IntakeId, request.Notes, cancellationToken);
+        var body = await apiResponse.Content.ReadAsStringAsync(cancellationToken);
+        return new ContentResult
+        {
+            Content = body,
+            ContentType = "application/json",
+            StatusCode = (int)apiResponse.StatusCode
+        };
+    }
+
+    public async Task<IActionResult> OnPostApproveAsync([FromBody] ApproveRequestBody request, CancellationToken cancellationToken)
+    {
+        if (!IsAdmin)
+        {
+            return Forbid();
+        }
+
+        var apiResponse = await _visualizationImageApiClient.ApproveAsync(request.IntakeId, cancellationToken);
+        var body = await apiResponse.Content.ReadAsStringAsync(cancellationToken);
+        return new ContentResult
+        {
+            Content = body,
+            ContentType = "application/json",
+            StatusCode = (int)apiResponse.StatusCode
+        };
+    }
+
+    public sealed class ReviseRequestBody
+    {
+        public Guid IntakeId { get; set; }
+
+        public string Notes { get; set; } = string.Empty;
+    }
+
+    public sealed class ApproveRequestBody
+    {
+        public Guid IntakeId { get; set; }
+    }
 }
 

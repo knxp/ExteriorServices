@@ -27,7 +27,15 @@
 
 <div class="image-lightbox" id="image-lightbox" hidden>
     <button class="image-lightbox-close" id="image-lightbox-close" type="button" aria-label="Close">&times;</button>
+    <button class="lightbox-arrow lightbox-arrow-prev" id="image-lightbox-prev" type="button"
+            aria-label="Previous photo" hidden>&lsaquo;</button>
     <img id="image-lightbox-image" alt="Full screen property photo" />
+    <button class="lightbox-arrow lightbox-arrow-next" id="image-lightbox-next" type="button" aria-label="Next photo"
+            hidden>&rsaquo;</button>
+</div>
+
+<div class="image-lightbox" id="image-detail-modal" hidden>
+    <div class="panel job-detail-card" id="image-detail-card"></div>
 </div>
 
 <script>
@@ -39,15 +47,40 @@
     const imageLightbox = document.getElementById('image-lightbox');
     const imageLightboxImage = document.getElementById('image-lightbox-image');
     const imageLightboxClose = document.getElementById('image-lightbox-close');
+    const imageLightboxPrev = document.getElementById('image-lightbox-prev');
+    const imageLightboxNext = document.getElementById('image-lightbox-next');
+    const imageDetailModal = document.getElementById('image-detail-modal');
+    const imageDetailCard = document.getElementById('image-detail-card');
 
-    function openLightbox(src) {
-        imageLightboxImage.src = src;
+    let lightboxPhotos = [];
+    let lightboxIndex = 0;
+    let detailModalWasOpenBeforeLightbox = false;
+
+    function renderLightboxPhoto() {
+        const photo = lightboxPhotos[lightboxIndex];
+        imageLightboxImage.src = photo.url;
+        imageLightboxImage.alt = photo.alt;
+        const hasMultiple = lightboxPhotos.length > 1;
+        imageLightboxPrev.hidden = !hasMultiple;
+        imageLightboxNext.hidden = !hasMultiple;
+    }
+
+    function openLightbox(photos, startIndex) {
+        lightboxPhotos = photos;
+        lightboxIndex = startIndex ?? 0;
+        renderLightboxPhoto();
+
+        detailModalWasOpenBeforeLightbox = !imageDetailModal.hidden;
+        imageDetailModal.hidden = true;
         imageLightbox.hidden = false;
     }
 
     function closeLightbox() {
         imageLightbox.hidden = true;
         imageLightboxImage.src = '';
+        if (detailModalWasOpenBeforeLightbox) {
+            imageDetailModal.hidden = false;
+        }
     }
 
     imageLightbox.addEventListener('click', closeLightbox);
@@ -56,9 +89,29 @@
         closeLightbox();
     });
     imageLightboxImage.addEventListener('click', (event) => event.stopPropagation());
+    imageLightboxPrev.addEventListener('click', (event) => {
+        event.stopPropagation();
+        lightboxIndex = (lightboxIndex - 1 + lightboxPhotos.length) % lightboxPhotos.length;
+        renderLightboxPhoto();
+    });
+    imageLightboxNext.addEventListener('click', (event) => {
+        event.stopPropagation();
+        lightboxIndex = (lightboxIndex + 1) % lightboxPhotos.length;
+        renderLightboxPhoto();
+    });
+    imageDetailModal.addEventListener('click', (event) => {
+        if (event.target === imageDetailModal) {
+            imageDetailModal.hidden = true;
+        }
+    });
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !imageLightbox.hidden) {
-            closeLightbox();
+        if (event.key === 'Escape') {
+            if (!imageLightbox.hidden) closeLightbox();
+            if (!imageDetailModal.hidden) imageDetailModal.hidden = true;
+        }
+        if (!imageLightbox.hidden && lightboxPhotos.length > 1) {
+            if (event.key === 'ArrowLeft') imageLightboxPrev.click();
+            if (event.key === 'ArrowRight') imageLightboxNext.click();
         }
     });
 
@@ -69,7 +122,94 @@
         imageLibraryError.hidden = state !== 'error';
     }
 
-    function renderImages(images) {
+    function formatDate(value) {
+        return value ? new Date(value).toLocaleDateString() : 'Not set';
+    }
+
+    function openImageDetail(image, property, customer, jobs) {
+        imageDetailCard.innerHTML = '';
+
+        const sourceUrl = image.sourceUrl ?? image.SourceUrl;
+        const resultUrl = image.resultUrl ?? image.ResultUrl;
+        const revisedUrl = image.revisedResultUrl ?? image.RevisedResultUrl;
+
+        const galleryPhotos = [
+            sourceUrl && { label: 'Uploaded property photo', url: `${imageApiBaseUrl}${sourceUrl}` },
+            resultUrl && { label: 'Generated preview', url: `${imageApiBaseUrl}${resultUrl}` },
+            revisedUrl && { label: 'Revised preview', url: `${imageApiBaseUrl}${revisedUrl}` }
+        ].filter(Boolean);
+
+        if (galleryPhotos.length > 0) {
+            const photos = document.createElement('div');
+            photos.className = 'detail-card-photos';
+
+            const thumbnails = [galleryPhotos[0], galleryPhotos[galleryPhotos.length - 1]]
+                .filter((photo, index, all) => all.indexOf(photo) === index);
+
+            thumbnails.forEach(photo => {
+                const thumbnailIndex = galleryPhotos.indexOf(photo);
+                const img = document.createElement('img');
+                img.src = photo.url;
+                img.alt = photo.label;
+                img.loading = 'lazy';
+                img.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    openLightbox(galleryPhotos, thumbnailIndex);
+                });
+                photos.append(img);
+            });
+
+            imageDetailCard.append(photos);
+        }
+
+        const heading = document.createElement('h2');
+        heading.className = 'section-title';
+        heading.textContent = property
+            ? property.addressLine1
+            : (customer ? `${customer.firstName} ${customer.lastName}` : 'Unlinked upload');
+        imageDetailCard.append(heading);
+
+        if (property) {
+            const address = document.createElement('p');
+            address.className = 'empty-state';
+            address.textContent = `${property.addressLine1}${property.addressLine2 ? ', ' + property.addressLine2 : ''}, ${property.city}, ${property.state} ${property.postalCode}`;
+            imageDetailCard.append(address);
+        }
+
+        const list = document.createElement('ul');
+        const fields = [
+            ['Status', image.status ?? image.Status ?? 'Completed'],
+            ['Uploaded', formatDate(image.createdAtUtc ?? image.CreatedAtUtc)],
+            ['Size', `${Math.round((image.size ?? image.Size ?? 0) / 1024)} KB`]
+        ];
+        if (customer) {
+            fields.push(['Customer', `${customer.firstName} ${customer.lastName}`]);
+            if (customer.phone) fields.push(['Phone', customer.phone]);
+            if (customer.email) fields.push(['Email', customer.email]);
+        }
+        fields.forEach(([label, value]) => {
+            const item = document.createElement('li');
+            item.innerHTML = `<strong>${label}:</strong> ${value}`;
+            list.appendChild(item);
+        });
+        imageDetailCard.append(list);
+
+        if (jobs.length) {
+            const jobsHeading = document.createElement('h3');
+            jobsHeading.textContent = 'Linked jobs';
+            const jobsList = document.createElement('ul');
+            jobs.forEach(job => {
+                const item = document.createElement('li');
+                item.innerHTML = `<strong>${job.addressLine1}:</strong> install ${formatDate(job.installDate)}, teardown ${formatDate(job.teardownDate)}`;
+                jobsList.appendChild(item);
+            });
+            imageDetailCard.append(jobsHeading, jobsList);
+        }
+
+        imageDetailModal.hidden = false;
+    }
+
+    function renderImages(images, customersById, propertiesById, jobsByCustomerId) {
         imageLibraryGrid.replaceChildren();
 
         images.forEach(image => {
@@ -79,41 +219,68 @@
             const photos = document.createElement('div');
             photos.className = 'image-library-card-photos';
 
-            const preview = document.createElement('img');
             const sourceUrl = image.sourceUrl ?? image.SourceUrl;
-            const fullSrc = `${imageApiBaseUrl}${sourceUrl}`;
-            preview.src = fullSrc;
-            preview.alt = 'Uploaded property photo';
+            const resultUrl = image.resultUrl ?? image.ResultUrl;
+            const revisedUrl = image.revisedResultUrl ?? image.RevisedResultUrl;
+
+            const cardGalleryPhotos = [
+                sourceUrl && { label: 'Uploaded property photo', url: `${imageApiBaseUrl}${sourceUrl}` },
+                resultUrl && { label: 'Generated preview', url: `${imageApiBaseUrl}${resultUrl}` },
+                revisedUrl && { label: 'Revised preview', url: `${imageApiBaseUrl}${revisedUrl}` }
+            ].filter(Boolean);
+
+            const preview = document.createElement('img');
+            preview.src = cardGalleryPhotos[0].url;
+            preview.alt = cardGalleryPhotos[0].label;
             preview.loading = 'lazy';
-            preview.addEventListener('click', () => openLightbox(fullSrc));
+            preview.addEventListener('click', (event) => {
+                event.stopPropagation();
+                openLightbox(cardGalleryPhotos, 0);
+            });
             photos.append(preview);
 
-            const resultUrl = image.resultUrl ?? image.ResultUrl;
-            if (resultUrl) {
-                const resultImg = document.createElement('img');
-                const fullResultSrc = `${imageApiBaseUrl}${resultUrl}`;
-                resultImg.src = fullResultSrc;
-                resultImg.alt = 'AI-generated property preview';
-                resultImg.loading = 'lazy';
-                resultImg.addEventListener('click', () => openLightbox(fullResultSrc));
-                photos.append(resultImg);
+            if (cardGalleryPhotos.length > 1) {
+                const latest = cardGalleryPhotos[cardGalleryPhotos.length - 1];
+                const latestImg = document.createElement('img');
+                latestImg.src = latest.url;
+                latestImg.alt = latest.label;
+                latestImg.loading = 'lazy';
+                latestImg.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    openLightbox(cardGalleryPhotos, cardGalleryPhotos.length - 1);
+                });
+                photos.append(latestImg);
             }
+
+            const customerId = image.customerId ?? image.CustomerId;
+            const propertyId = image.propertyId ?? image.PropertyId;
+            const property = propertyId ? propertiesById.get(propertyId) : undefined;
+            const customer = customerId ? customersById.get(customerId) : undefined;
+            const jobs = customerId ? (jobsByCustomerId.get(customerId) ?? []) : [];
 
             const details = document.createElement('div');
             details.className = 'image-library-card-body';
 
-            const id = document.createElement('strong');
-            const intakeId = image.intakeId ?? image.IntakeId ?? '';
-            id.textContent = intakeId.replaceAll('-', '').slice(0, 8);
+            const title = document.createElement('strong');
+            title.textContent = property
+                ? property.addressLine1
+                : (customer ? `${customer.firstName} ${customer.lastName}` : 'Unlinked upload');
             const date = document.createElement('span');
             date.textContent = new Date(image.createdAtUtc ?? image.CreatedAtUtc).toLocaleString();
             const size = document.createElement('span');
             size.textContent = `${Math.round((image.size ?? image.Size ?? 0) / 1024)} KB`;
 
-            details.append(id, date, size);
+            details.append(title, date, size);
             card.append(photos, details);
+            card.addEventListener('click', () => openImageDetail(image, property, customer, jobs));
             imageLibraryGrid.append(card);
         });
+    }
+
+    async function fetchJson(path, signal) {
+        const response = await fetch(`${imageApiBaseUrl}${path}`, { signal });
+        if (!response.ok) throw new Error(`Request to ${path} failed`);
+        return response.json();
     }
 
     async function loadImages() {
@@ -121,14 +288,25 @@
         const timeout = setTimeout(() => controller.abort(), 10000);
 
         try {
-            const response = await fetch(`${imageApiBaseUrl}/api/property-visualizations`, {
-                signal: controller.signal
-            });
-            if (!response.ok) throw new Error('Image request failed');
+            const [images, customers, properties, jobs] = await Promise.all([
+                fetchJson('/api/property-visualizations', controller.signal),
+                fetchJson('/api/customers', controller.signal),
+                fetchJson('/api/properties', controller.signal),
+                fetchJson('/api/jobs', controller.signal)
+            ]);
 
-            const images = await response.json();
-            renderImages(Array.isArray(images) ? images : []);
-            showLibraryState(images.length ? 'images' : 'empty');
+            const customersById = new Map((customers ?? []).map(c => [c.id ?? c.Id, c]));
+            const propertiesById = new Map((properties ?? []).map(p => [p.id ?? p.Id, p]));
+            const jobsByCustomerId = new Map();
+            (jobs ?? []).forEach(job => {
+                const customerId = job.customerId ?? job.CustomerId;
+                if (!jobsByCustomerId.has(customerId)) jobsByCustomerId.set(customerId, []);
+                jobsByCustomerId.get(customerId).push(job);
+            });
+
+            const imageList = Array.isArray(images) ? images : [];
+            renderImages(imageList, customersById, propertiesById, jobsByCustomerId);
+            showLibraryState(imageList.length ? 'images' : 'empty');
         } catch {
             showLibraryState('error');
         } finally {

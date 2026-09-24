@@ -37,13 +37,22 @@ public sealed class BlobStoredVisualizationImageService : IStoredVisualizationIm
         return images.OrderByDescending(image => image.CreatedAtUtc).ToList();
     }
 
+    public StoredVisualizationImage? Get(Guid intakeId)
+    {
+        var blobName = $"{intakeId:N}.json";
+        return _containerClient.GetBlobClient(blobName).Exists().Value ? ReadMetadata(blobName) : null;
+    }
+
     public (Stream Stream, string ContentType)? OpenSource(Guid intakeId)
-        => OpenFirstMatch($"{intakeId:N}", excludeSuffix: "-generated");
+        => OpenFirstMatch($"{intakeId:N}", requiredSuffix: null, excludeSuffixes: new[] { "-generated", "-revised" });
 
     public (Stream Stream, string ContentType)? OpenResult(Guid intakeId)
-        => OpenFirstMatch($"{intakeId:N}-generated", excludeSuffix: null);
+        => OpenFirstMatch($"{intakeId:N}-generated", requiredSuffix: "-generated", excludeSuffixes: Array.Empty<string>());
 
-    private (Stream Stream, string ContentType)? OpenFirstMatch(string prefix, string? excludeSuffix)
+    public (Stream Stream, string ContentType)? OpenRevision(Guid intakeId)
+        => OpenFirstMatch($"{intakeId:N}-revised", requiredSuffix: "-revised", excludeSuffixes: Array.Empty<string>());
+
+    private (Stream Stream, string ContentType)? OpenFirstMatch(string prefix, string? requiredSuffix, string[] excludeSuffixes)
     {
         BlobItem? match = null;
         foreach (var blobItem in _containerClient.GetBlobs(traits: BlobTraits.None, states: BlobStates.None, prefix: prefix, cancellationToken: default))
@@ -54,13 +63,12 @@ public sealed class BlobStoredVisualizationImageService : IStoredVisualizationIm
             }
 
             var nameWithoutExtension = Path.GetFileNameWithoutExtension(blobItem.Name);
-            if (excludeSuffix is not null
-                && nameWithoutExtension.EndsWith(excludeSuffix, StringComparison.OrdinalIgnoreCase))
+            if (excludeSuffixes.Any(suffix => nameWithoutExtension.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)))
             {
                 continue;
             }
 
-            if (excludeSuffix is null && !nameWithoutExtension.EndsWith("-generated", StringComparison.OrdinalIgnoreCase))
+            if (requiredSuffix is not null && !nameWithoutExtension.EndsWith(requiredSuffix, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -95,12 +103,17 @@ public sealed class BlobStoredVisualizationImageService : IStoredVisualizationIm
             var customerId = ReadNullableInt(root, "CustomerId");
             var propertyId = ReadNullableInt(root, "PropertyId");
             var status = TryGetProperty(root, "status")?.GetString() ?? "Completed";
+            var revisedStatus = TryGetProperty(root, "revisedStatus")?.GetString();
+            var approved = TryGetProperty(root, "approved")?.GetBoolean() ?? false;
 
             return new StoredVisualizationImage
             {
                 IntakeId = intakeId,
                 SourceUrl = $"/api/property-visualizations/{intakeId}/source",
                 ResultUrl = status == "Completed" ? $"/api/property-visualizations/{intakeId}/result" : null,
+                RevisedResultUrl = revisedStatus == "Completed" ? $"/api/property-visualizations/{intakeId}/revision" : null,
+                HasRevision = !string.IsNullOrEmpty(revisedStatus),
+                Approved = approved,
                 Status = status,
                 CustomerId = customerId,
                 PropertyId = propertyId,

@@ -44,7 +44,9 @@ builder.Services.AddCors(options => options.AddPolicy("LocalWeb", policy =>
             "http://localhost:5010",
             "https://localhost:5010",
             "http://192.168.1.68:5010",
-            "https://exteriorservices-web-hyemffhacnendzgs.centralus-01.azurewebsites.net")
+            "https://exteriorservices-web-hyemffhacnendzgs.centralus-01.azurewebsites.net",
+            "https://brightenar.com",
+            "https://www.brightenar.com")
         .AllowAnyHeader()
         .AllowAnyMethod();
 }));
@@ -67,11 +69,13 @@ if (!string.IsNullOrWhiteSpace(azureStorageConnectionString))
     });
     builder.Services.AddScoped<IPropertyVisualizationIntakeService, BlobPropertyVisualizationIntakeService>();
     builder.Services.AddSingleton<IStoredVisualizationImageService, BlobStoredVisualizationImageService>();
+    builder.Services.AddScoped<IPropertyVisualizationRevisionService, BlobPropertyVisualizationRevisionService>();
 }
 else
 {
     builder.Services.AddScoped<IPropertyVisualizationIntakeService, LocalPropertyVisualizationIntakeService>();
     builder.Services.AddSingleton<IStoredVisualizationImageService, StoredVisualizationImageService>();
+    builder.Services.AddScoped<IPropertyVisualizationRevisionService, LocalPropertyVisualizationRevisionService>();
 }
 
 builder.Services.Configure<OpenAIOptions>(builder.Configuration.GetSection(OpenAIOptions.SectionName));

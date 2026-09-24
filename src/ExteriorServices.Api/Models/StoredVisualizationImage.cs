@@ -8,6 +8,12 @@ public sealed class StoredVisualizationImage
 
     public string? ResultUrl { get; init; }
 
+    public string? RevisedResultUrl { get; init; }
+
+    public bool HasRevision { get; init; }
+
+    public bool Approved { get; init; }
+
     public string Status { get; init; } = "Completed";
 
     public int? CustomerId { get; init; }

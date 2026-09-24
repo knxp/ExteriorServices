@@ -598,6 +598,11 @@
                 border-radius: 16px;
                 background: rgba(255, 255, 255, 0.8);
                 box-shadow: 0 12px 28px rgba(22, 36, 46, 0.1);
+                cursor: pointer;
+            }
+
+            .image-library-card:hover {
+                box-shadow: 0 16px 34px rgba(22, 36, 46, 0.16);
             }
 
             .image-library-card img {
@@ -659,6 +664,66 @@
 
             .image-lightbox-close:hover {
                 background: rgba(255, 255, 255, 0.24);
+            }
+
+            .result-lightbox-content {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 18px;
+                max-width: 720px;
+                width: 100%;
+                cursor: default;
+            }
+
+            .result-lightbox-content img {
+                max-width: 100%;
+                max-height: 65vh;
+                object-fit: contain;
+                border-radius: 12px;
+                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+                cursor: default;
+                background: rgba(0, 0, 0, 0.2);
+            }
+
+            .preview-decision-row {
+                display: flex;
+                gap: 14px;
+            }
+
+            .decision-button {
+                flex: 1;
+                padding: 14px 18px;
+                border-radius: 12px;
+                font-weight: 700;
+                font-size: 15px;
+                text-align: center;
+                cursor: pointer;
+                border: none;
+                box-shadow: none;
+            }
+
+            .decision-button-revision {
+                background: rgba(255, 255, 255, 0.14);
+                color: #fff;
+                border: 1px solid rgba(255, 255, 255, 0.4);
+            }
+
+            .decision-button-revision:hover {
+                background: rgba(255, 255, 255, 0.24);
+            }
+
+            .decision-button-approve {
+                background: #2fae66;
+                color: #fff;
+            }
+
+            .decision-button-approve:hover {
+                background: #269356;
+            }
+
+            .result-lightbox-content .empty-state {
+                color: rgba(255, 255, 255, 0.85);
             }
 
             .calendar-header {
@@ -760,6 +825,73 @@
                 display: grid;
                 gap: 6px;
                 font-size: 14px;
+            }
+
+            .job-detail-card h3 {
+                margin: 6px 0 0;
+                font-size: 14px;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: var(--muted);
+            }
+
+            .detail-card-photos {
+                display: flex;
+                gap: 8px;
+            }
+
+            .detail-card-photos>img,
+            .detail-card-photo-slot {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .detail-card-photos img {
+                width: 100%;
+                height: 130px;
+                object-fit: cover;
+                border-radius: 10px;
+                cursor: zoom-in;
+                background: rgba(230, 237, 241, 0.9);
+            }
+
+            .detail-card-photo-slot {
+                position: relative;
+            }
+
+            .lightbox-arrow {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.14);
+                color: #fff;
+                font-size: 28px;
+                line-height: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: none;
+                padding: 0;
+                z-index: 1001;
+            }
+
+            .lightbox-arrow:hover {
+                background: rgba(255, 255, 255, 0.24);
+            }
+
+            .lightbox-arrow-prev {
+                left: 26px;
+            }
+
+            .lightbox-arrow-next {
+                right: 26px;
+            }
+
+            .lightbox-arrow[hidden] {
+                display: none;
             }
 
             @@media (max-width: 720px) {
@@ -1108,7 +1240,8 @@
 
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <div style="position:sticky;top:0;z-index:60;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 20px;background:#171d24;color:#fff;font-size:13px;">
+        <div
+            style="position:sticky;top:0;z-index:60;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 20px;background:#171d24;color:#fff;font-size:13px;">
             <span>
                 Signed in as <strong>@User.Identity!.Name</strong>
                 @if (!isAdminUser)
@@ -1170,9 +1303,9 @@
     @if (!isAdminUser)
     {
         <script>
-            // Viewer accounts can browse every page but must not be able to submit forms that change data.
-            document.querySelectorAll('form[method="post"] button:not([type="button"]), form[method="post"] input[type="submit"]')
-                .forEach(function (el) { el.disabled = true; });
+                // Viewer accounts can browse every page but must not be able to submit forms that change data.
+                document.querySelectorAll('form[method="post"] button:not([type="button"]), form[method="post"] input[type="submit"]')
+                    .forEach(function (el) { el.disabled = true; });
         </script>
     }
 

@@ -114,27 +114,69 @@
                     }
                 </div>
 
-                            <div class="design-notes">
-                                <label for="design-notes">Design notes</label>
-                                <textarea id="design-notes" name="designNotes" rows="4"
-                                          placeholder="Add details to include or avoid in the preview..."></textarea>
+                <div class="design-notes">
+                    <label for="design-notes">Design notes</label>
+                    <textarea id="design-notes" name="designNotes" rows="4"
+                              placeholder="Add details to include or avoid in the preview..."></textarea>
+                </div>
+            </div>
+
+            @if (Model.IsAdmin)
+            {
+                <button class="generate-action" id="generate-button" type="button" disabled>Generate</button>
+                <p class="empty-state" id="generate-status" role="status" aria-live="polite"></p>
+                <button class="result-preview" id="result-preview" type="button" hidden aria-label="Open generated preview">
+                    <img id="result-preview-image" alt="Generated property preview" />
+                </button>
+                <form id="antiforgery-form" style="display:none">@Html.AntiForgeryToken()</form>
+            }
+            else
+            {
+                <p class="empty-state">Preview generation is available to admin accounts only.</p>
+            }
+
+            <div class="image-lightbox" id="result-lightbox" hidden>
+                <button class="image-lightbox-close" id="result-lightbox-close" type="button"
+                        aria-label="Close">&times;</button>
+                <div class="result-lightbox-content">
+                    <img id="result-lightbox-image" alt="Generated property preview" />
+                    <div class="button-row preview-decision-row" id="preview-decision-buttons">
+                        <button class="decision-button decision-button-revision" id="make-revision-button" type="button">Make
+                            Revision</button>
+                            <button class="decision-button decision-button-approve" id="looks-good-button" type="button">Looks
+                                Good</button>
+                            </div>
+                            <p class="empty-state" id="preview-decision-status" role="status" aria-live="polite" hidden></p>
+                        </div>
+                    </div>
+
+                    <div class="image-lightbox" id="revision-notes-modal" hidden>
+                        <div class="panel job-detail-card">
+                            <h2 class="section-title">Make a revision</h2>
+                            <p class="empty-state">We'll tell OpenAI: "take this edited image and make the following minor adjustments:"
+                                plus the notes below. Only one revision is allowed per preview.</p>
+                                <div class="design-notes">
+                                    <label for="revision-notes-input">Revision notes</label>
+                                    <textarea id="revision-notes-input" rows="4"
+                                              placeholder="e.g. take the lights off the side of the house, add lights to the top roof line..."></textarea>
+                                </div>
+                                <div class="button-row">
+                                    <button class="secondary-action-link" id="revision-notes-cancel" type="button">Cancel</button>
+                                    <button class="generate-action" id="revision-notes-submit" type="button">Submit revision</button>
+                                </div>
                             </div>
                         </div>
 
-                        @if (Model.IsAdmin)
-                        {
-                            <button class="generate-action" id="generate-button" type="button" disabled>Generate</button>
-                            <p class="empty-state" id="generate-status" role="status" aria-live="polite"></p>
-                            <button class="result-preview" id="result-preview" type="button" hidden
-                                    aria-label="Open generated preview full screen">
-                                <img id="result-preview-image" alt="Generated property preview" />
-                            </button>
-                            <form id="antiforgery-form" style="display:none">@Html.AntiForgeryToken()</form>
-                        }
-                        else
-                        {
-                            <p class="empty-state">Preview generation is available to admin accounts only.</p>
-                        }
+                        <div class="image-lightbox" id="confirm-modal" hidden>
+                            <div class="panel job-detail-card">
+                                <h2 class="section-title" id="confirm-modal-title">Are you sure?</h2>
+                                <p class="empty-state" id="confirm-modal-message"></p>
+                                <div class="button-row">
+                                    <button class="secondary-action-link" id="confirm-modal-cancel" type="button">Cancel</button>
+                                    <button class="generate-action" id="confirm-modal-accept" type="button">Confirm</button>
+                                </div>
+                            </div>
+                        </div>
 
                         <script>
                                 const isAdmin = @(Model.IsAdmin ? "true" : "false");
@@ -146,6 +188,64 @@
                                 const photoPreview = document.getElementById('property-photo-preview');
                                 const modifierInputs = document.querySelectorAll('.modifier-group input[type="checkbox"]');
                                 const apiBaseUrl = '@Model.BrowserApiBaseUrl';
+                                const resultLightbox = document.getElementById('result-lightbox');
+                                const resultLightboxImage = document.getElementById('result-lightbox-image');
+                                const resultLightboxClose = document.getElementById('result-lightbox-close');
+                                const previewDecisionButtons = document.getElementById('preview-decision-buttons');
+                                const previewDecisionStatus = document.getElementById('preview-decision-status');
+                                const makeRevisionButton = document.getElementById('make-revision-button');
+                                const looksGoodButton = document.getElementById('looks-good-button');
+                                const revisionNotesModal = document.getElementById('revision-notes-modal');
+                                const revisionNotesInput = document.getElementById('revision-notes-input');
+                                const revisionNotesSubmit = document.getElementById('revision-notes-submit');
+                                const revisionNotesCancel = document.getElementById('revision-notes-cancel');
+                                const confirmModal = document.getElementById('confirm-modal');
+                                const confirmModalTitle = document.getElementById('confirm-modal-title');
+                                const confirmModalMessage = document.getElementById('confirm-modal-message');
+                                const confirmModalAccept = document.getElementById('confirm-modal-accept');
+                                const confirmModalCancel = document.getElementById('confirm-modal-cancel');
+                                let currentIntakeId = null;
+
+                                function antiforgeryToken() {
+                                    return document.querySelector('#antiforgery-form input[name="__RequestVerificationToken"]')?.value;
+                                }
+
+                                function closeResultLightbox() {
+                                    resultLightbox.hidden = true;
+                                }
+
+                                resultLightbox.addEventListener('click', closeResultLightbox);
+                                resultLightboxClose.addEventListener('click', (event) => {
+                                    event.stopPropagation();
+                                    closeResultLightbox();
+                                });
+                                document.querySelector('.result-lightbox-content')
+                                    .addEventListener('click', (event) => event.stopPropagation());
+                                document.addEventListener('keydown', (event) => {
+                                    if (event.key === 'Escape' && !resultLightbox.hidden) {
+                                        closeResultLightbox();
+                                    }
+                                });
+
+                                function askConfirm(title, message) {
+                                    return new Promise((resolve) => {
+                                        confirmModalTitle.textContent = title;
+                                        confirmModalMessage.textContent = message;
+                                        confirmModal.hidden = false;
+
+                                        const cleanup = (result) => {
+                                            confirmModal.hidden = true;
+                                            confirmModalAccept.removeEventListener('click', onAccept);
+                                            confirmModalCancel.removeEventListener('click', onCancel);
+                                            resolve(result);
+                                        };
+                                        const onAccept = () => cleanup(true);
+                                        const onCancel = () => cleanup(false);
+
+                                        confirmModalAccept.addEventListener('click', onAccept);
+                                        confirmModalCancel.addEventListener('click', onCancel);
+                                    });
+                                }
 
                                 function updateGenerateState() {
                                     if (!isAdmin || !generateButton) {
@@ -206,13 +306,13 @@
                                     generateButton.disabled = true;
                                     generateStatus.hidden = false;
                                     generateStatus.textContent = 'Generating your preview with OpenAI... this can take up to a couple minutes.';
-
-                                    const antiforgeryToken = document.querySelector('#antiforgery-form input[name="__RequestVerificationToken"]')?.value;
+                                    resultLightbox.hidden = true;
+                                    previewDecisionStatus.hidden = true;
 
                                     try {
                                         const response = await fetch('?handler=Intake', {
                                             method: 'POST',
-                                            headers: antiforgeryToken ? { 'RequestVerificationToken': antiforgeryToken } : {},
+                                            headers: antiforgeryToken() ? { 'RequestVerificationToken': antiforgeryToken() } : {},
                                             body: formData
                                         });
 
@@ -222,9 +322,15 @@
 
                                         const result = await response.json();
                                         if (result.status === 'Completed' && result.resultUrl) {
-                                            resultPreviewImage.src = `${apiBaseUrl}${result.resultUrl}`;
+                                            currentIntakeId = result.intakeId ?? result.IntakeId;
+                                            const previewUrl = `${apiBaseUrl}${result.resultUrl}`;
+                                            resultPreviewImage.src = previewUrl;
+                                            resultLightboxImage.src = previewUrl;
                                             resultPreview.hidden = false;
                                             generateStatus.hidden = true;
+                                            makeRevisionButton.hidden = false;
+                                            looksGoodButton.hidden = false;
+                                            previewDecisionButtons.hidden = false;
                                         } else {
                                             generateStatus.textContent = 'The preview could not be generated. Please try again.';
                                             updateGenerateState();
@@ -237,8 +343,98 @@
                                 });
 
                                 resultPreview?.addEventListener('click', () => {
-                                    if (resultPreviewImage.requestFullscreen) {
-                                        resultPreviewImage.requestFullscreen();
+                                    resultLightbox.hidden = false;
+                                });
+
+                                makeRevisionButton?.addEventListener('click', () => {
+                                    revisionNotesInput.value = '';
+                                    revisionNotesModal.hidden = false;
+                                });
+
+                                revisionNotesCancel?.addEventListener('click', () => {
+                                    revisionNotesModal.hidden = true;
+                                });
+
+                                revisionNotesSubmit?.addEventListener('click', async () => {
+                                    const notes = revisionNotesInput.value.trim();
+                                    if (!notes) {
+                                        return;
+                                    }
+
+                                    revisionNotesModal.hidden = true;
+                                    const confirmed = await askConfirm(
+                                        'Submit this revision?',
+                                        'This is the only revision allowed for this preview. Continue?');
+                                    if (!confirmed) {
+                                        return;
+                                    }
+
+                                    previewDecisionButtons.hidden = true;
+                                    previewDecisionStatus.hidden = false;
+                                    previewDecisionStatus.textContent = 'Applying your revision... this can take up to a couple minutes.';
+
+                                    try {
+                                        const response = await fetch('?handler=Revise', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                ...(antiforgeryToken() ? { 'RequestVerificationToken': antiforgeryToken() } : {})
+                                            },
+                                            body: JSON.stringify({ intakeId: currentIntakeId, notes })
+                                        });
+
+                                        const result = await response.json();
+                                        if (!response.ok) {
+                                            throw new Error(result.message ?? 'The revision request failed.');
+                                        }
+
+                                        const revisedUrl = result.revisedResultUrl ?? result.RevisedResultUrl;
+                                        if (revisedUrl) {
+                                            const revisedFullUrl = `${apiBaseUrl}${revisedUrl}`;
+                                            resultPreviewImage.src = revisedFullUrl;
+                                            resultLightboxImage.src = revisedFullUrl;
+                                        }
+                                        previewDecisionStatus.hidden = true;
+                                        makeRevisionButton.hidden = true;
+                                        previewDecisionButtons.hidden = false;
+                                    } catch (error) {
+                                        previewDecisionStatus.textContent = error.message;
+                                    }
+                                });
+
+                                looksGoodButton?.addEventListener('click', async () => {
+                                    const confirmed = await askConfirm(
+                                        'Mark this preview as approved?',
+                                        'This finalizes the preview for this property.');
+                                    if (!confirmed) {
+                                        return;
+                                    }
+
+                                    previewDecisionButtons.hidden = true;
+                                    previewDecisionStatus.hidden = false;
+                                    previewDecisionStatus.textContent = 'Saving approval...';
+
+                                    try {
+                                        const response = await fetch('?handler=Approve', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                ...(antiforgeryToken() ? { 'RequestVerificationToken': antiforgeryToken() } : {})
+                                            },
+                                            body: JSON.stringify({ intakeId: currentIntakeId })
+                                        });
+
+                                        const result = await response.json();
+                                        if (!response.ok) {
+                                            throw new Error(result.message ?? 'The approval request failed.');
+                                        }
+
+                                        previewDecisionStatus.hidden = false;
+                                        previewDecisionStatus.textContent = 'Preview approved.';
+                                    } catch (error) {
+                                        previewDecisionStatus.hidden = false;
+                                        previewDecisionStatus.textContent = error.message;
+                                        previewDecisionButtons.hidden = false;
                                     }
                                 });
                         </script>

@@ -27,6 +27,12 @@ public sealed class StoredVisualizationImageService : IStoredVisualizationImageS
             .ToList();
     }
 
+    public StoredVisualizationImage? Get(Guid intakeId)
+    {
+        var metadataPath = Path.Combine(_storageDirectory, $"{intakeId:N}.json");
+        return File.Exists(metadataPath) ? ReadMetadata(metadataPath) : null;
+    }
+
     public (Stream Stream, string ContentType)? OpenSource(Guid intakeId)
     {
         var path = FindImagePath(intakeId);
@@ -63,6 +69,24 @@ public sealed class StoredVisualizationImageService : IStoredVisualizationImageS
         return (File.OpenRead(path), contentType);
     }
 
+    public (Stream Stream, string ContentType)? OpenRevision(Guid intakeId)
+    {
+        var path = FindRevisionPath(intakeId);
+        if (path is null)
+        {
+            return null;
+        }
+
+        var contentType = Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".webp" => "image/webp",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            _ => "image/png"
+        };
+
+        return (File.OpenRead(path), contentType);
+    }
+
     private StoredVisualizationImage? ReadMetadata(string metadataPath)
     {
         try
@@ -77,12 +101,17 @@ public sealed class StoredVisualizationImageService : IStoredVisualizationImageS
             var customerId = ReadNullableInt(root, "CustomerId");
             var propertyId = ReadNullableInt(root, "PropertyId");
             var status = TryGetProperty(root, "status")?.GetString() ?? "Completed";
+            var revisedStatus = TryGetProperty(root, "revisedStatus")?.GetString();
+            var approved = TryGetProperty(root, "approved")?.GetBoolean() ?? false;
 
             return new StoredVisualizationImage
             {
                 IntakeId = intakeId,
                 SourceUrl = $"/api/property-visualizations/{intakeId}/source",
                 ResultUrl = status == "Completed" ? $"/api/property-visualizations/{intakeId}/result" : null,
+                RevisedResultUrl = revisedStatus == "Completed" ? $"/api/property-visualizations/{intakeId}/revision" : null,
+                HasRevision = !string.IsNullOrEmpty(revisedStatus),
+                Approved = approved,
                 Status = status,
                 CustomerId = customerId,
                 PropertyId = propertyId,
@@ -132,6 +161,17 @@ public sealed class StoredVisualizationImageService : IStoredVisualizationImageS
         }
 
         return Directory.EnumerateFiles(_storageDirectory, $"{intakeId:N}-generated.*")
+            .FirstOrDefault();
+    }
+
+    private string? FindRevisionPath(Guid intakeId)
+    {
+        if (!Directory.Exists(_storageDirectory))
+        {
+            return null;
+        }
+
+        return Directory.EnumerateFiles(_storageDirectory, $"{intakeId:N}-revised.*")
             .FirstOrDefault();
     }
 
